@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#0b1120"/>
+<title>Daftar — ReceOTP</title>
+<link id="favicon" rel="icon" href="/assets/favicon.ico"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+<style>
+:root{--brand-primary:#1e40af;--brand-hover:#1e3a8a;--bg-main:#f8fafc;--bg-surface:#fff;--text-main:#0f172a;--text-muted:#64748b;--border-color:#e2e8f0;--hero-bg:#0b1120}
+body{font-family:'Inter',sans-serif;min-height:100vh;background:var(--bg-main);color:var(--text-main)}
+h1,.navbar-brand{font-family:'Plus Jakarta Sans',sans-serif}
+.split-wrap{min-height:100vh;display:flex}
+.split-visual{flex:1;background-color:var(--hero-bg);background-image:radial-gradient(circle at top right,rgba(30,64,175,.18) 0%,transparent 40%);display:flex;align-items:center;justify-content:center;padding:3rem}
+.split-form{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem 1.5rem}
+.auth-card{width:100%;max-width:420px}
+.auth-logo{font-weight:800;font-size:1.5rem;color:var(--text-main);text-decoration:none;display:flex;gap:.2rem;margin-bottom:.3rem}
+.auth-logo span:last-child{color:var(--brand-primary)}
+.auth-sub{color:var(--text-muted);font-size:.92rem;margin-bottom:1.75rem}
+.form-control{min-height:48px;font-size:16px;border-color:var(--border-color)}
+.form-control:focus{border-color:var(--brand-primary);box-shadow:0 0 0 .2rem rgba(30,64,175,.15)}
+.btn-primary-custom{background:var(--brand-primary);border-color:var(--brand-primary);color:#fff}
+.btn-primary-custom:hover{background:var(--brand-hover);border-color:var(--brand-hover);color:#fff}
+.btn-outline-custom{border:1px solid var(--border-color);color:var(--text-main);background:var(--bg-surface)}
+.strength-bar{height:4px;border-radius:2px;background:var(--border-color);overflow:hidden;margin-top:.4rem}
+.strength-fill{height:100%;width:0;transition:width .3s,background .3s;border-radius:2px}
+</style>
+</head>
+<body>
+<div class="split-wrap">
+  <div class="split-visual d-none d-lg-flex">
+    <svg width="300" height="240" viewBox="0 0 300 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="65" y="20" width="170" height="200" rx="16" fill="#1e293b" fill-opacity=".8" stroke="#334155" stroke-width="1.5"/>
+      <circle cx="150" cy="66" r="22" fill="#0f172a" stroke="#334155"/>
+      <circle cx="150" cy="58" r="8" fill="#3b82f6"/>
+      <path d="M136 78c0-9 7-14 14-14s14 5 14 14" stroke="#3b82f6" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <rect x="94" y="110" width="112" height="9" rx="4" fill="#334155"/>
+      <rect x="94" y="128" width="112" height="9" rx="4" fill="#334155"/>
+      <rect x="94" y="146" width="80" height="9" rx="4" fill="#334155"/>
+      <rect x="94" y="172" width="112" height="30" rx="8" fill="#2563eb"/>
+      <text x="150" y="192" text-anchor="middle" fill="#fff" font-size="12" font-family="Plus Jakarta Sans,sans-serif" font-weight="700">Daftar Gratis</text>
+    </svg>
+  </div>
+  <div class="split-form">
+    <div class="auth-card">
+      <a class="auth-logo" href="/" id="siteLogo"><span>Rece</span><span>OTP</span></a>
+      <p class="auth-sub">Buat akun baru — gratis, tanpa kartu kredit</p>
+      <div id="alertBox"></div>
+      <form id="regForm" novalidate>
+        <div class="mb-3">
+          <label class="form-label fw-600 small">Username</label>
+          <input type="text" class="form-control" id="username" placeholder="username_kamu" required/>
+          <div class="form-text small" id="usernameHint"></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-600 small">Email</label>
+          <input type="email" class="form-control" id="email" placeholder="email@kamu.com" required/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-600 small">Password</label>
+          <div class="input-group">
+            <input type="password" class="form-control" id="password" placeholder="Minimal 8 karakter" required/>
+            <button class="btn btn-outline-custom" type="button" id="togglePwd"><i class="bi bi-eye"></i></button>
+          </div>
+          <div class="strength-bar mt-1"><div class="strength-fill" id="strengthFill"></div></div>
+          <div class="form-text small" id="strengthText"></div>
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-600 small">Konfirmasi Password</label>
+          <input type="password" class="form-control" id="confirm" placeholder="Ulangi password" required/>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="agree" required/>
+          <label class="form-check-label small" for="agree">Saya setuju dengan <a href="/terms" target="_blank">Syarat & Ketentuan</a> dan <a href="/privacy" target="_blank">Kebijakan Privasi</a>.</label>
+        </div>
+        <button type="submit" class="btn btn-primary-custom w-100 py-2 fw-700" id="regBtn">
+          <span id="regSpinner" class="spinner-border spinner-border-sm me-2 d-none"></span>Buat Akun Sekarang
+        </button>
+      </form>
+      <div class="text-center mt-3">
+        <span class="small text-muted">Sudah punya akun? </span><a href="/login" class="small fw-600 text-decoration-none">Masuk</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+fetch('/api/site-info').then(r=>r.json()).then(d=>{
+  if(d.site_name)document.title=`Daftar — ${d.site_name}`;
+  if(d.favicon)document.getElementById('favicon').href=d.favicon;
+}).catch(()=>{});
+function showAlert(el,msg,type='danger'){el.innerHTML=`<div class="alert alert-${type} py-2 small">${msg}</div>`}
+document.getElementById('togglePwd').addEventListener('click',()=>{
+  const p=document.getElementById('password');const i=document.querySelector('#togglePwd i');
+  p.type=p.type==='password'?'text':'password';i.className=p.type==='password'?'bi bi-eye':'bi bi-eye-slash';
+});
+document.getElementById('username').addEventListener('input',function(){
+  const v=/^[a-z0-9_]{3,30}$/.test(this.value.toLowerCase());this.value=this.value.toLowerCase();
+  document.getElementById('usernameHint').textContent=this.value?(v?'Format valid':'3-30 karakter: huruf kecil, angka, underscore'):'';
+  document.getElementById('usernameHint').className='form-text small '+(v?'text-success':'text-danger');
+});
+document.getElementById('password').addEventListener('input',function(){
+  const v=this.value,f=document.getElementById('strengthFill'),t=document.getElementById('strengthText');
+  let s=0;if(v.length>=8)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
+  const pct=[0,25,50,75,100][s];const clr=['','#dc3545','#fd7e14','#ffc107','#198754'][s];const msg=['','Sangat Lemah','Lemah','Sedang','Kuat'][s];
+  f.style.width=pct+'%';f.style.background=clr;t.textContent=v?msg:'';t.style.color=clr;
+});
+document.getElementById('regForm').addEventListener('submit',async(e)=>{
+  e.preventDefault();
+  const ab=document.getElementById('alertBox');ab.innerHTML='';
+  const username=document.getElementById('username').value.trim();
+  const email=document.getElementById('email').value.trim();
+  const password=document.getElementById('password').value;
+  const confirm=document.getElementById('confirm').value;
+  if(password!==confirm){showAlert(ab,'Password tidak cocok.');return}
+  if(!document.getElementById('agree').checked){showAlert(ab,'Setujui syarat dan ketentuan dulu.');return}
+  const btn=document.getElementById('regBtn');const sp=document.getElementById('regSpinner');
+  btn.disabled=true;sp.classList.remove('d-none');
+  try{
+    const r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,email,password})});
+    const d=await r.json();
+    if(!d.success){showAlert(ab,d.error);return}
+    showAlert(ab,'Akun berhasil dibuat! Mengarahkan ke halaman login...','success');
+    setTimeout(()=>location.href='/login',1500);
+  }catch{showAlert(ab,'Gagal terhubung ke server.')}
+  finally{btn.disabled=false;sp.classList.add('d-none')}
+});
+</script>
+</body>
+</html>
