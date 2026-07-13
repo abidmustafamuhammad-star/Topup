@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dashboard — RumahOTP</title>
+<link rel="icon" href="/assets/favicon.ico"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5/dist/brite/bootstrap.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+<style>
+body{background:#f8f9fa;font-family:'Segoe UI',system-ui,sans-serif}
+.sidebar{width:250px;min-height:100vh;background:#fff;border-right:1px solid #e9ecef;position:fixed;top:0;left:0;z-index:100;transition:transform .3s;padding-top:0}
+.sidebar-brand{padding:1.2rem 1.5rem;font-size:1.3rem;font-weight:900;color:#0d6efd;border-bottom:1px solid #e9ecef;display:block;text-decoration:none}
+.sidebar-nav{padding:.75rem 0}
+.sidebar-link{display:flex;align-items:center;gap:.75rem;padding:.65rem 1.5rem;color:#495057;text-decoration:none;font-size:.9rem;font-weight:500;transition:all .2s;border-left:3px solid transparent}
+.sidebar-link:hover{background:#f0f5ff;color:#0d6efd;border-left-color:#0d6efd}
+.sidebar-link.active{background:#f0f5ff;color:#0d6efd;border-left-color:#0d6efd;font-weight:700}
+.sidebar-link i{font-size:1rem;width:1.2rem;text-align:center}
+.main-content{margin-left:250px;min-height:100vh;transition:margin .3s}
+.topbar{background:#fff;border-bottom:1px solid #e9ecef;padding:.85rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.page-section{padding:1.5rem}
+.stat-card{border:none;border-radius:1rem;padding:1.25rem 1.5rem;height:100%}
+.stat-card .stat-icon{width:2.8rem;height:2.8rem;border-radius:.75rem;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.stat-card .stat-val{font-size:1.7rem;font-weight:800;line-height:1}
+.stat-card .stat-lbl{font-size:.8rem;color:#6c757d;margin-top:.25rem}
+.order-card{border:none;border-radius:1rem;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:1rem;transition:box-shadow .2s}
+.order-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.1)}
+.badge-active{background:#d1fae5;color:#065f46}
+.badge-paid{background:#dbeafe;color:#1e40af}
+.badge-issued{background:#ede9fe;color:#5b21b6}
+.badge-otp{background:#d1fae5;color:#065f46}
+.badge-cancelled{background:#fee2e2;color:#991b1b}
+.badge-expired{background:#f3f4f6;color:#6b7280}
+.badge-pending{background:#fef3c7;color:#92400e}
+.tg-link-box{background:linear-gradient(135deg,#e8f4fd,#f0e7ff);border:1.5px solid #bee3f8;border-radius:1rem;padding:1.25rem}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:none}
+  .main-content{margin-left:0}
+  .overlay{display:block!important;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+}
+.overlay{display:none}
+.phone-badge{font-family:monospace;font-size:1.1rem;font-weight:700;background:#f0f5ff;padding:.25rem .75rem;border-radius:.5rem;color:#0d6efd;letter-spacing:1px}
+.otp-badge{font-family:monospace;font-size:1.4rem;font-weight:900;background:#d1fae5;padding:.3rem 1rem;border-radius:.5rem;color:#065f46;letter-spacing:3px}
+</style>
+</head>
+<body>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <a class="sidebar-brand" href="/" id="sidebarBrand">RumahOTP</a>
+  <nav class="sidebar-nav">
+    <a class="sidebar-link active" href="/dashboard" id="lnkDash"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+    <a class="sidebar-link" href="/order" id="lnkOrder"><i class="bi bi-phone"></i> Beli Nomor</a>
+    <a class="sidebar-link" href="#" id="lnkHistory" onclick="showSection('history');return false"><i class="bi bi-clock-history"></i> Riwayat Order</a>
+    <a class="sidebar-link" href="#" id="lnkTx" onclick="showSection('transactions');return false"><i class="bi bi-receipt"></i> Transaksi</a>
+    <a class="sidebar-link" href="#" id="lnkProfile" onclick="showSection('profile');return false"><i class="bi bi-person-circle"></i> Profil</a>
+    <hr class="mx-3"/>
+    <a class="sidebar-link" href="/developer/api"><i class="bi bi-code-square"></i> API Docs</a>
+    <a class="sidebar-link" href="#" onclick="logout()"><i class="bi bi-box-arrow-left text-danger"></i> <span class="text-danger">Keluar</span></a>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<div class="main-content">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-sm btn-outline-secondary d-md-none" onclick="openSidebar()"><i class="bi bi-list fs-5"></i></button>
+      <span class="fw-700 text-dark" id="pageHead">Dashboard</span>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      <div class="text-end d-none d-sm-block">
+        <div class="fw-700 small" id="userName">Loading...</div>
+        <div class="text-muted" style="font-size:.75rem" id="userRole">User</div>
+      </div>
+      <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-700" style="width:38px;height:38px;font-size:.9rem" id="userAvatar">?</div>
+    </div>
+  </div>
+
+  <div class="page-section">
+
+    <!-- ── DASHBOARD HOME ── -->
+    <div id="secDash">
+      <!-- Notif Telegram belum terhubung -->
+      <div id="tgNotice" class="tg-link-box mb-4 d-none">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          <i class="bi bi-telegram fs-2" style="color:#0088cc"></i>
+          <div class="flex-grow-1">
+            <div class="fw-700 mb-1">Tautkan Akun Telegram</div>
+            <div class="small text-muted">Aktifkan 2FA login dan terima notifikasi OTP langsung di Telegram kamu.</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="showSection('profile')">Tautkan Sekarang</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+          <div class="stat-card bg-white shadow-sm">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <div class="stat-icon bg-primary bg-opacity-10"><i class="bi bi-wallet2 text-primary"></i></div>
+              <span class="stat-lbl">Saldo</span>
+            </div>
+            <div class="stat-val text-primary" id="statBalance">Rp 0</div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="stat-card bg-white shadow-sm">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <div class="stat-icon bg-success bg-opacity-10"><i class="bi bi-phone-fill text-success"></i></div>
+              <span class="stat-lbl">Total Order</span>
+            </div>
+            <div class="stat-val text-success" id="statOrders">0</div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="stat-card bg-white shadow-sm">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <div class="stat-icon bg-warning bg-opacity-10"><i class="bi bi-receipt text-warning"></i></div>
+              <span class="stat-lbl">Total Transaksi</span>
+            </div>
+            <div class="stat-val text-warning" id="statTx">0</div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="stat-card bg-white shadow-sm">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <div class="stat-icon bg-info bg-opacity-10"><i class="bi bi-calendar3 text-info"></i></div>
+              <span class="stat-lbl">Bergabung</span>
+            </div>
+            <div class="stat-val text-info" style="font-size:1rem;font-weight:700;line-height:1.3" id="statJoined">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent orders -->
+      <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3">
+          <span class="fw-700">Order Terbaru</span>
+          <a href="#" class="btn btn-sm btn-outline-primary" onclick="showSection('history');return false">Lihat Semua</a>
+        </div>
+        <div class="card-body p-0" id="recentOrders">
+          <div class="text-center py-5 text-muted"><div class="spinner-border text-primary mb-2"></div><br/>Memuat...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HISTORY ── -->
+    <div id="secHistory" class="d-none">
+      <h5 class="fw-700 mb-4"><i class="bi bi-clock-history me-2 text-primary"></i>Riwayat Order</h5>
+      <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-body p-0" id="historyList">
+          <div class="text-center py-5 text-muted"><div class="spinner-border text-primary mb-2"></div><br/>Memuat...</div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-center mt-3 gap-2" id="historyPager"></div>
+    </div>
+
+    <!-- ── TRANSACTIONS ── -->
+    <div id="secTransactions" class="d-none">
+      <h5 class="fw-700 mb-4"><i class="bi bi-receipt me-2 text-primary"></i>Riwayat Transaksi</h5>
+      <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-body p-0" id="txList">
+          <div class="text-center py-5 text-muted"><div class="spinner-border text-primary mb-2"></div><br/>Memuat...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROFILE ── -->
+    <div id="secProfile" class="d-none">
+      <h5 class="fw-700 mb-4"><i class="bi bi-person-circle me-2 text-primary"></i>Profil & Keamanan</h5>
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm rounded-3 p-4">
+            <h6 class="fw-700 mb-3">Informasi Akun</h6>
+            <div class="mb-2 small"><span class="text-muted">Username:</span> <strong id="profUsername">-</strong></div>
+            <div class="mb-2 small"><span class="text-muted">Email:</span> <strong id="profEmail">-</strong></div>
+            <div class="mb-2 small"><span class="text-muted">Role:</span> <strong id="profRole">-</strong></div>
+            <div class="mb-2 small"><span class="text-muted">Status:</span> <strong id="profStatus">-</strong></div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm rounded-3 p-4">
+            <h6 class="fw-700 mb-3"><i class="bi bi-telegram me-1" style="color:#0088cc"></i>Verifikasi Telegram</h6>
+            <div id="tgStatus" class="mb-3"></div>
+            <button class="btn btn-outline-primary btn-sm" id="genLinkBtn" onclick="generateTelegramLink()">
+              <i class="bi bi-link-45deg me-1"></i>Generate Link Token
+            </button>
+            <div id="tgTokenBox" class="mt-3 d-none">
+              <div class="alert alert-info small py-2">
+                Kirim perintah berikut ke bot Telegram kami:<br/>
+                <code id="tgCommand">/link TOKEN</code>
+              </div>
+              <div class="small text-muted">Token berlaku <strong>10 menit</strong>. Cari bot: <strong id="tgBotName">@BotKamu</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-section -->
+</div><!-- /main-content -->
+
+<!-- Modal OTP Detail -->
+<div class="modal fade" id="otpModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-3">
+      <div class="modal-header border-0"><h5 class="modal-title fw-700">Detail Order & OTP</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body" id="otpModalBody"><div class="text-center"><div class="spinner-border text-primary"></div></div></div>
+      <div class="modal-footer border-0 gap-2" id="otpModalFooter"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let USER={};
+const sections=['Dash','History','Transactions','Profile'];
+const sectionTitles={Dash:'Dashboard',History:'Riwayat Order',Transactions:'Transaksi',Profile:'Profil & Keamanan'};
+let historyPage=1;
+
+function rp(n){return'Rp '+Number(n||0).toLocaleString('id-ID')}
+function dt(s){return s?new Date(s).toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}
+function orderBadge(s){const m={pending_payment:'badge-pending',paid:'badge-paid',number_issued:'badge-issued',otp_received:'badge-otp',completed:'badge-otp',cancelled:'badge-cancelled',expired:'badge-expired'};const l={pending_payment:'Menunggu Bayar',paid:'Dibayar',number_issued:'Nomor Aktif',otp_received:'OTP Diterima',completed:'Selesai',cancelled:'Dibatalkan',expired:'Kedaluwarsa'};return`<span class="badge ${m[s]||'bg-secondary'} rounded-pill px-2">${l[s]||s}</span>`}
+function txBadge(s){const m={pending:'badge-pending',success:'badge-otp',failed:'badge-cancelled',cancelled:'badge-expired'};const l={pending:'Menunggu',success:'Berhasil',failed:'Gagal',cancelled:'Dibatalkan'};return`<span class="badge ${m[s]||'bg-secondary'} rounded-pill px-2">${l[s]||s}</span>`}
+
+function showSection(name){
+  const N=name.charAt(0).toUpperCase()+name.slice(1);
+  sections.forEach(s=>{document.getElementById('sec'+s)?.classList.add('d-none')});
+  document.getElementById('sec'+N)?.classList.remove('d-none');
+  document.getElementById('pageHead').textContent=sectionTitles[N]||N;
+  document.querySelectorAll('.sidebar-link').forEach(l=>l.classList.remove('active'));
+  const lnk=document.getElementById('lnk'+N);if(lnk)lnk.classList.add('active');
+  closeSidebar();
+  if(N==='History')loadHistory(1);
+  if(N==='Transactions')loadTransactions();
+  if(N==='Profile')loadProfile();
+}
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').style.display='block'}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').style.display='none'}
+
+async function api(m,u,b){
+  const r=await fetch(u,{method:m,headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined,credentials:'include'});
+  if(r.status===401){location.href='/login';throw new Error('Unauthenticated')}
+  return r.json();
+}
+
+async function logout(){await fetch('/api/auth/logout',{method:'POST',credentials:'include'});location.href='/login'}
+
+// INIT
+(async()=>{
+  const si=await fetch('/api/site-info').then(r=>r.json()).catch(()=>({}));
+  if(si.site_name){document.getElementById('sidebarBrand').textContent=si.site_name;document.title='Dashboard — '+si.site_name}
+
+  const me=await api('GET','/api/auth/me');
+  if(!me.success){location.href='/login';return}
+  USER=me.user;
+  document.getElementById('userName').textContent=USER.username;
+  document.getElementById('userRole').textContent=USER.role==='admin'?'Administrator':'User';
+  document.getElementById('userAvatar').textContent=USER.username[0].toUpperCase();
+  if(USER.role==='admin'){
+    const li=document.createElement('a');li.className='sidebar-link';li.href='/admin';li.innerHTML='<i class="bi bi-shield-fill text-warning"></i> <span class="text-warning fw-700">Admin Panel</span>';
+    document.querySelector('.sidebar-nav hr')?.before(li);
+  }
+  if(!USER.telegram_linked)document.getElementById('tgNotice').classList.remove('d-none');
+  loadDashboard();
+})();
+
+async function loadDashboard(){
+  const d=await api('GET','/api/user/orders?limit=5');
+  document.getElementById('statBalance').textContent=rp(USER.balance||0);
+  document.getElementById('statOrders').textContent=d.total||0;
+  document.getElementById('statJoined').textContent=USER.created_at?new Date(USER.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'—';
+  const tx=await api('GET','/api/user/transactions?limit=1');
+  document.getElementById('statTx').textContent=tx.total||0;
+  renderOrderList('recentOrders',d.data||[],true);
+}
+
+function renderOrderList(elId,orders,mini=false){
+  const el=document.getElementById(elId);
+  if(!orders.length){el.innerHTML='<div class="text-center py-5 text-muted"><i class="bi bi-inbox fs-1 d-block mb-2"></i>Belum ada order.</div>';return}
+  el.innerHTML=`<div class="table-responsive"><table class="table table-hover mb-0 small"><thead class="table-light"><tr><th>Layanan</th><th>Nomor</th><th>Harga</th><th>Status</th><th>Tanggal</th><th></th></tr></thead><tbody>${
+    orders.map(o=>`<tr>
+      <td class="fw-600">${o.service_name||o.service_id}</td>
+      <td><span class="phone-badge small">${o.phone_number||'—'}</span></td>
+      <td>${rp(o.price)}</td>
+      <td>${orderBadge(o.status)}</td>
+      <td class="text-muted">${dt(o.created_at)}</td>
+      <td><button class="btn btn-xs btn-outline-primary" style="font-size:.75rem;padding:.15rem .5rem" onclick="showOrderDetail(${o.id})">Detail</button></td>
+    </tr>`).join('')
+  }</tbody></table></div>`;
+}
+
+async function loadHistory(page=1){
+  historyPage=page;
+  document.getElementById('historyList').innerHTML='<div class="text-center py-5 text-muted"><div class="spinner-border text-primary"></div></div>';
+  const d=await api('GET',`/api/user/orders?page=${page}&limit=20`);
+  renderOrderList('historyList',d.data||[]);
+  // Pager
+  const pager=document.getElementById('historyPager');
+  const pages=Math.ceil((d.total||0)/20);
+  pager.innerHTML=pages<2?'':Array.from({length:pages},(_,i)=>`<button class="btn btn-sm ${i+1===page?'btn-primary':'btn-outline-primary'}" onclick="loadHistory(${i+1})">${i+1}</button>`).join('');
+}
+
+async function loadTransactions(){
+  document.getElementById('txList').innerHTML='<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
+  const d=await api('GET','/api/user/transactions?limit=30');
+  const el=document.getElementById('txList');
+  if(!(d.data||[]).length){el.innerHTML='<div class="text-center py-5 text-muted"><i class="bi bi-receipt fs-1 d-block mb-2"></i>Belum ada transaksi.</div>';return}
+  el.innerHTML=`<div class="table-responsive"><table class="table table-hover mb-0 small"><thead class="table-light"><tr><th>Invoice</th><th>Jumlah</th><th>Metode</th><th>Status</th><th>Tanggal</th></tr></thead><tbody>${
+    d.data.map(t=>`<tr><td><code class="small">${t.pakasir_order_id}</code></td><td class="fw-700">${rp(t.amount)}</td><td>${t.payment_method||'QRIS'}</td><td>${txBadge(t.status)}</td><td class="text-muted">${dt(t.created_at)}</td></tr>`).join('')
+  }</tbody></table></div>`;
+}
+
+async function loadProfile(){
+  document.getElementById('profUsername').textContent=USER.username;
+  document.getElementById('profEmail').textContent=USER.email||'—';
+  document.getElementById('profRole').textContent=USER.role==='admin'?'Administrator':'Pengguna';
+  document.getElementById('profStatus').textContent='Aktif';
+  document.getElementById('tgStatus').innerHTML=USER.telegram_linked
+    ?'<div class="alert alert-success py-2 small mb-0"><i class="bi bi-check-circle-fill me-1"></i>Telegram sudah terhubung. 2FA aktif.</div>'
+    :'<div class="alert alert-warning py-2 small mb-0"><i class="bi bi-exclamation-triangle me-1"></i>Belum terhubung. Tautkan untuk aktifkan 2FA.</div>';
+}
+
+async function generateTelegramLink(){
+  const btn=document.getElementById('genLinkBtn');
+  btn.disabled=true;btn.textContent='Membuat token...';
+  try{
+    const d=await api('POST','/api/auth/telegram/generate-link');
+    if(!d.success){alert(d.error);return}
+    document.getElementById('tgCommand').textContent=`/link ${d.token}`;
+    document.getElementById('tgBotName').textContent='@'+(d.bot_username||'BotKamu');
+    document.getElementById('tgTokenBox').classList.remove('d-none');
+  }catch{alert('Gagal membuat token.')}
+  finally{btn.disabled=false;btn.innerHTML='<i class="bi bi-arrow-clockwise me-1"></i>Buat Token Baru'}
+}
+
+// Order detail modal
+async function showOrderDetail(id){
+  const modal=new bootstrap.Modal(document.getElementById('otpModal'));
+  document.getElementById('otpModalBody').innerHTML='<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>';
+  document.getElementById('otpModalFooter').innerHTML='';
+  modal.show();
+  try{
+    const d=await api('GET',`/api/order/${id}/otp-status`);
+    const o=d.order;
+    let html=`<div class="mb-2 small"><span class="text-muted">Status:</span> ${orderBadge(o.status)}</div>`;
+    if(o.phone_number)html+=`<div class="mb-3"><div class="text-muted small mb-1">Nomor Virtual:</div><div class="phone-badge">${o.phone_number}</div></div>`;
+    if(o.otp_code)html+=`<div class="mb-3"><div class="text-muted small mb-1">Kode OTP:</div><div class="otp-badge">${o.otp_code}</div>${o.otp_message?`<div class="small text-muted mt-1">Pesan: ${o.otp_message}</div>`:''}
+      <button class="btn btn-sm btn-outline-success mt-2" onclick="copyText('${o.otp_code}')"><i class="bi bi-clipboard me-1"></i>Salin OTP</button></div>`;
+    if(!o.otp_code&&['number_issued'].includes(o.status))html+=`<div class="alert alert-info small py-2"><i class="bi bi-hourglass-split me-1"></i>Menunggu OTP dari platform tujuan...</div>`;
+    document.getElementById('otpModalBody').innerHTML=html;
+    const footer=document.getElementById('otpModalFooter');
+    if(['number_issued','paid','pending_payment'].includes(o.status)){
+      footer.innerHTML=`<button class="btn btn-danger btn-sm" onclick="cancelOrder(${id})"><i class="bi bi-x-circle me-1"></i>Cancel Order</button>`;
+    }
+    if(['number_issued'].includes(o.status)){
+      footer.innerHTML+=`<button class="btn btn-outline-primary btn-sm" onclick="pollOtp(${id})"><i class="bi bi-arrow-clockwise me-1"></i>Refresh OTP</button>`;
+    }
+  }catch{document.getElementById('otpModalBody').innerHTML='<div class="text-danger small">Gagal memuat detail.</div>'}
+}
+
+async function pollOtp(id){
+  document.getElementById('otpModalBody').innerHTML='<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>';
+  await showOrderDetail(id);
+}
+
+async function cancelOrder(id){
+  if(!confirm('Batalkan order ini? Jika sudah bayar, saldo dikembalikan.'))return;
+  const d=await api('POST',`/api/order/${id}/cancel`);
+  window.alert(d.success?'Order dibatalkan.':d.error||'Gagal.');
+  bootstrap.Modal.getInstance(document.getElementById('otpModal'))?.hide();
+  loadDashboard();
+}
+
+function copyText(t){navigator.clipboard.writeText(t).then(()=>window.alert('OTP disalin!')).catch(()=>{})}
+</script>
+</body>
+</html>

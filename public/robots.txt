@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /blog
+Allow: /developer/api
+Allow: /privacy
+Allow: /terms
+Allow: /refund
+
+Disallow: /api/
+Disallow: /webhook/
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /payment
+Disallow: /status
+Disallow: /order
+
+Sitemap: https://receotp.my.id/sitemap.xml

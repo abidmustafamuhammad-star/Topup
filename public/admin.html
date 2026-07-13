@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Admin Panel — RumahOTP</title>
+<link rel="icon" href="/assets/favicon.ico"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5/dist/brite/bootstrap.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+body{background:#f0f4f8;font-family:'Segoe UI',system-ui,sans-serif}
+.admin-sidebar{width:230px;min-height:100vh;background:#1e293b;position:fixed;top:0;left:0;z-index:100}
+.admin-brand{padding:1.2rem 1.5rem;font-size:1.1rem;font-weight:900;color:#fff;border-bottom:1px solid rgba(255,255,255,.1);display:block;text-decoration:none}
+.admin-brand span{color:#f59e0b}
+.admin-nav-link{display:flex;align-items:center;gap:.75rem;padding:.65rem 1.5rem;color:rgba(255,255,255,.65);font-size:.875rem;font-weight:500;text-decoration:none;transition:all .2s;border-left:3px solid transparent}
+.admin-nav-link:hover{background:rgba(255,255,255,.07);color:#fff}
+.admin-nav-link.active{background:rgba(99,102,241,.2);color:#818cf8;border-left-color:#818cf8}
+.admin-main{margin-left:230px;min-height:100vh}
+.admin-topbar{background:#fff;border-bottom:1px solid #e2e8f0;padding:.85rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.admin-content{padding:1.5rem}
+.kpi-card{background:#fff;border-radius:1rem;padding:1.25rem 1.5rem;border:none;box-shadow:0 1px 8px rgba(0,0,0,.06)}
+.kpi-val{font-size:1.8rem;font-weight:900;line-height:1.1}
+.kpi-label{font-size:.78rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-top:.2rem}
+.kpi-icon{width:2.8rem;height:2.8rem;border-radius:.75rem;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.section-title{font-size:1rem;font-weight:700;margin-bottom:1rem}
+.table th{font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;color:#64748b;background:#f8fafc;border:none}
+.table td{font-size:.87rem;vertical-align:middle}
+.badge-success-soft{background:#d1fae5;color:#065f46}
+.badge-danger-soft{background:#fee2e2;color:#991b1b}
+.badge-warning-soft{background:#fef3c7;color:#92400e}
+.badge-info-soft{background:#dbeafe;color:#1e40af}
+.chart-card{background:#fff;border-radius:1rem;padding:1.25rem;box-shadow:0 1px 8px rgba(0,0,0,.06)}
+@media(max-width:768px){.admin-sidebar{display:none}.admin-main{margin-left:0}}
+.nav-section-label{padding:.5rem 1.5rem .25rem;font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-top:.5rem}
+</style>
+</head>
+<body>
+
+<aside class="admin-sidebar">
+  <a class="admin-brand" href="/admin">🔐 Admin <span>Panel</span></a>
+  <div class="nav-section-label">Overview</div>
+  <a class="admin-nav-link active" href="#" onclick="showSec('dashboard')"><i class="bi bi-grid-1x2"></i>Dashboard</a>
+  <div class="nav-section-label">Manajemen</div>
+  <a class="admin-nav-link" href="#" onclick="showSec('users')"><i class="bi bi-people"></i>Users</a>
+  <a class="admin-nav-link" href="#" onclick="showSec('orders')"><i class="bi bi-phone"></i>Orders</a>
+  <a class="admin-nav-link" href="#" onclick="showSec('transactions')"><i class="bi bi-receipt"></i>Transaksi</a>
+  <div class="nav-section-label">Sistem</div>
+  <a class="admin-nav-link" href="#" onclick="showSec('settings')"><i class="bi bi-gear"></i>Pengaturan</a>
+  <hr style="border-color:rgba(255,255,255,.1);margin:.5rem 1rem"/>
+  <a class="admin-nav-link" href="/"><i class="bi bi-house"></i>Ke Website</a>
+  <a class="admin-nav-link" href="#" onclick="logout()"><i class="bi bi-box-arrow-left text-danger"></i><span class="text-danger">Keluar</span></a>
+</aside>
+
+<div class="admin-main">
+  <div class="admin-topbar">
+    <div class="fw-700" id="adminPageHead">Dashboard</div>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-warning text-dark rounded-pill">ADMIN</span>
+      <span class="fw-600 small" id="adminUser">—</span>
+    </div>
+  </div>
+  <div class="admin-content" id="adminContent">
+
+    <!-- ── DASHBOARD ── -->
+    <div id="secDashboard">
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+          <div class="kpi-card d-flex align-items-center gap-3">
+            <div class="kpi-icon bg-primary bg-opacity-10"><i class="bi bi-people text-primary"></i></div>
+            <div><div class="kpi-val text-primary" id="kpiUsers">—</div><div class="kpi-label">Total Users</div></div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="kpi-card d-flex align-items-center gap-3">
+            <div class="kpi-icon bg-success bg-opacity-10"><i class="bi bi-phone text-success"></i></div>
+            <div><div class="kpi-val text-success" id="kpiOrders">—</div><div class="kpi-label">Total Orders</div></div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="kpi-card d-flex align-items-center gap-3">
+            <div class="kpi-icon bg-warning bg-opacity-10"><i class="bi bi-cash text-warning"></i></div>
+            <div><div class="kpi-val text-warning" id="kpiRevenue" style="font-size:1.3rem">—</div><div class="kpi-label">Revenue</div></div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="kpi-card d-flex align-items-center gap-3">
+            <div class="kpi-icon bg-info bg-opacity-10"><i class="bi bi-wallet text-info"></i></div>
+            <div><div class="kpi-val text-info" id="kpiProvider" style="font-size:1.1rem">—</div><div class="kpi-label">Saldo Provider</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-card mb-4">
+        <div class="section-title">Penjualan 30 Hari Terakhir</div>
+        <canvas id="salesChart" height="80"></canvas>
+      </div>
+      <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3">
+          <span class="fw-700 small">Order Aktif</span>
+          <span class="badge bg-primary rounded-pill" id="kpiActive">0</span>
+        </div>
+        <div class="card-body p-0" id="activeOrdersTable">
+          <div class="text-center py-3 text-muted small">Memuat...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── USERS ── -->
+    <div id="secUsers" class="d-none">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="section-title mb-0">Manajemen Users</div>
+        <div class="d-flex gap-2">
+          <input type="text" class="form-control form-control-sm" id="userSearch" placeholder="Cari username/email..." style="width:220px" oninput="loadUsers(1,this.value)"/>
+        </div>
+      </div>
+      <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-body p-0" id="usersTable"></div>
+      </div>
+      <div class="d-flex justify-content-center mt-3 gap-2" id="usersPager"></div>
+    </div>
+
+    <!-- ── ORDERS ── -->
+    <div id="secOrders" class="d-none">
+      <div class="section-title">Semua Orders</div>
+      <div class="mb-3 d-flex gap-2 flex-wrap">
+        <button class="btn btn-sm btn-outline-secondary" onclick="loadOrders(1,'')">Semua</button>
+        <button class="btn btn-sm btn-outline-warning" onclick="loadOrders(1,'pending_payment')">Pending</button>
+        <button class="btn btn-sm btn-outline-primary" onclick="loadOrders(1,'number_issued')">Aktif</button>
+        <button class="btn btn-sm btn-outline-success" onclick="loadOrders(1,'otp_received')">OTP</button>
+        <button class="btn btn-sm btn-outline-danger" onclick="loadOrders(1,'cancelled')">Batal</button>
+      </div>
+      <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-body p-0" id="ordersTable"></div>
+      </div>
+      <div class="d-flex justify-content-center mt-3 gap-2" id="ordersPager"></div>
+    </div>
+
+    <!-- ── TRANSACTIONS ── -->
+    <div id="secTransactions" class="d-none">
+      <div class="section-title">Riwayat Transaksi</div>
+      <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-body p-0" id="txTable"></div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div id="secSettings" class="d-none">
+      <div class="section-title">Pengaturan Website</div>
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm rounded-3 p-4">
+            <h6 class="fw-700 mb-3">Harga & Bisnis</h6>
+            <div id="settingsAlert"></div>
+            <form id="settingsForm">
+              <div class="mb-3">
+                <label class="form-label small fw-600">Markup Harga (%)</label>
+                <input type="number" class="form-control" id="set_markup" min="0" max="200" step="0.5"/>
+                <div class="form-text small">Contoh: 15 = harga naik 15% dari harga provider</div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label small fw-600">Nama Website</label>
+                <input type="text" class="form-control" id="set_sitename"/>
+              </div>
+              <div class="mb-3">
+                <label class="form-label small fw-600">Tagline</label>
+                <input type="text" class="form-control" id="set_tagline"/>
+              </div>
+              <div class="mb-3">
+                <label class="form-label small fw-600">Auto-cancel Order (menit)</label>
+                <input type="number" class="form-control" id="set_cancel_min" min="5" max="60"/>
+                <div class="form-text small">Order yang tidak bayar lebih dari N menit akan auto-cancel.</div>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm fw-700">Simpan Pengaturan</button>
+            </form>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm rounded-3 p-4">
+            <h6 class="fw-700 mb-3">Mode Maintenance</h6>
+            <p class="text-muted small">Aktifkan maintenance mode untuk menonaktifkan akses website sementara. Admin tetap bisa akses.</p>
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox" id="maintenanceToggle" role="switch" onchange="toggleMaintenance(this.checked)"/>
+              <label class="form-check-label fw-600" for="maintenanceToggle">Maintenance Mode</label>
+            </div>
+            <div id="maintenanceAlert"></div>
+          </div>
+          <div class="card border-0 shadow-sm rounded-3 p-4 mt-3">
+            <h6 class="fw-700 mb-3">Saldo Provider RumahOTP</h6>
+            <div id="providerBalanceBox" class="text-muted small">Memuat...</div>
+            <button class="btn btn-outline-primary btn-sm mt-2" onclick="loadProviderBalance()">
+              <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+            </button>
+          </div>
+          <div class="card border-0 shadow-sm rounded-3 p-4 mt-3">
+            <h6 class="fw-700 mb-3">Adjust Saldo User</h6>
+            <div class="mb-2">
+              <label class="form-label small fw-600">User ID</label>
+              <input type="number" class="form-control form-control-sm" id="adjUserId" placeholder="ID user"/>
+            </div>
+            <div class="mb-2">
+              <label class="form-label small fw-600">Jumlah (negatif untuk potong)</label>
+              <input type="number" class="form-control form-control-sm" id="adjAmount" placeholder="Contoh: 50000 atau -10000"/>
+            </div>
+            <div class="mb-2">
+              <label class="form-label small fw-600">Catatan</label>
+              <input type="text" class="form-control form-control-sm" id="adjNote" placeholder="Alasan adjust"/>
+            </div>
+            <div id="adjAlert"></div>
+            <button class="btn btn-warning btn-sm w-100 fw-700" onclick="adjustBalance()">Adjust Saldo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- User Detail Modal -->
+<div class="modal fade" id="userModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content rounded-3">
+      <div class="modal-header border-0"><h5 class="modal-title fw-700">Detail User</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body" id="userModalBody"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let salesChart=null;
+
+function rp(n){return'Rp '+Number(n||0).toLocaleString('id-ID')}
+function dt(s){return s?new Date(s).toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}
+function orderBadge(s){const m={pending_payment:'badge-warning-soft',paid:'badge-info-soft',number_issued:'badge-info-soft',otp_received:'badge-success-soft',completed:'badge-success-soft',cancelled:'badge-danger-soft',expired:'bg-secondary text-white'};const l={pending_payment:'Pending Bayar',paid:'Dibayar',number_issued:'Nomor Aktif',otp_received:'OTP Diterima',completed:'Selesai',cancelled:'Dibatalkan',expired:'Kadaluarsa'};return`<span class="badge ${m[s]||'bg-secondary'} rounded-pill">${l[s]||s}</span>`}
+function txBadge(s){const m={pending:'badge-warning-soft',success:'badge-success-soft',failed:'badge-danger-soft',cancelled:'bg-secondary text-white'};const l={pending:'Pending',success:'Berhasil',failed:'Gagal',cancelled:'Dibatalkan'};return`<span class="badge ${m[s]||'bg-secondary'} rounded-pill">${l[s]||s}</span>`}
+
+async function api(m,u,b){
+  const r=await fetch(u,{method:m,headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined,credentials:'include'});
+  if(r.status===401){location.href='/login';throw new Error('Auth')}
+  if(r.status===403){location.href='/dashboard';throw new Error('Forbidden')}
+  return r.json()
+}
+async function logout(){await fetch('/api/auth/logout',{method:'POST',credentials:'include'});location.href='/login'}
+
+function showSec(name){
+  const secs=['Dashboard','Users','Orders','Transactions','Settings'];
+  secs.forEach(s=>document.getElementById('sec'+s).classList.add('d-none'));
+  document.getElementById('sec'+name.charAt(0).toUpperCase()+name.slice(1)).classList.remove('d-none');
+  document.querySelectorAll('.admin-nav-link').forEach(l=>l.classList.remove('active'));
+  document.querySelector(`.admin-nav-link[onclick*="${name}"]`)?.classList.add('active');
+  document.getElementById('adminPageHead').textContent={dashboard:'Dashboard',users:'Manajemen Users',orders:'Orders',transactions:'Transaksi',settings:'Pengaturan'}[name]||name;
+  if(name==='users')loadUsers();
+  if(name==='orders')loadOrders();
+  if(name==='transactions')loadTx();
+  if(name==='settings')loadSettings();
+}
+
+// INIT
+(async()=>{
+  const me=await api('GET','/api/auth/me');
+  if(!me.success||me.user.role!=='admin'){location.href='/dashboard';return}
+  document.getElementById('adminUser').textContent=me.user.username;
+  loadDashboard();
+})();
+
+async function loadDashboard(){
+  const [stats,daily]=await Promise.all([api('GET','/api/admin/stats'),api('GET','/api/admin/stats/daily')]);
+  if(stats.success){
+    const s=stats.stats;
+    document.getElementById('kpiUsers').textContent=s.total_users||0;
+    document.getElementById('kpiOrders').textContent=s.total_orders||0;
+    document.getElementById('kpiRevenue').textContent=rp(s.revenue);
+    document.getElementById('kpiActive').textContent=s.active_orders||0;
+    document.getElementById('kpiProvider').textContent=s.provider_balance!=null?rp(s.provider_balance):'—';
+  }
+  // Chart
+  if(daily.success){
+    const labels=daily.data.map(r=>r.date);
+    const revenues=daily.data.map(r=>Number(r.revenue||0));
+    const orders=daily.data.map(r=>Number(r.orders||0));
+    const ctx=document.getElementById('salesChart').getContext('2d');
+    if(salesChart)salesChart.destroy();
+    salesChart=new Chart(ctx,{type:'bar',data:{labels,datasets:[
+      {label:'Revenue (Rp)',data:revenues,backgroundColor:'rgba(13,110,253,.2)',borderColor:'#0d6efd',borderWidth:2,borderRadius:4,yAxisID:'y'},
+      {label:'Jumlah Order',data:orders,type:'line',borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,.1)',borderWidth:2,fill:true,tension:.4,yAxisID:'y1'},
+    ]},options:{responsive:true,interaction:{mode:'index'},plugins:{legend:{position:'top'}},scales:{y:{position:'left',ticks:{callback:v=>rp(v)}},y1:{position:'right',grid:{drawOnChartArea:false}}}}});
+  }
+  // Active orders
+  const ord=await api('GET','/api/admin/orders?status=number_issued&limit=10');
+  const el=document.getElementById('activeOrdersTable');
+  if(!(ord.data||[]).length){el.innerHTML='<div class="text-center py-3 text-muted small">Tidak ada order aktif.</div>';return}
+  el.innerHTML=`<div class="table-responsive"><table class="table mb-0"><thead><tr><th>User</th><th>Layanan</th><th>Nomor</th><th>Harga</th><th>Waktu</th></tr></thead><tbody>${
+    ord.data.map(o=>`<tr><td class="small">${o.username||'—'}</td><td class="small fw-600">${o.service_name||o.service_id}</td><td><code class="small">${o.phone_number||'—'}</code></td><td class="small">${rp(o.price)}</td><td class="small text-muted">${dt(o.created_at)}</td></tr>`).join('')
+  }</tbody></table></div>`;
+}
+
+async function loadUsers(page=1,q=''){
+  document.getElementById('usersTable').innerHTML='<div class="text-center py-3"><div class="spinner-border text-primary spinner-border-sm"></div></div>';
+  const d=await api('GET',`/api/admin/users?page=${page}&limit=20&q=${encodeURIComponent(q)}`);
+  const el=document.getElementById('usersTable');
+  if(!(d.data||[]).length){el.innerHTML='<div class="text-center py-3 text-muted small">Tidak ada user.</div>';return}
+  el.innerHTML=`<div class="table-responsive"><table class="table mb-0"><thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Saldo</th><th>Status</th><th>Tg</th><th></th></tr></thead><tbody>${
+    d.data.map(u=>`<tr>
+      <td class="small text-muted">${u.id}</td>
+      <td class="fw-600 small">${u.username}</td>
+      <td class="small">${u.email}</td>
+      <td><span class="badge ${u.role==='admin'?'bg-warning text-dark':'bg-secondary'} rounded-pill">${u.role}</span></td>
+      <td class="small fw-600">${rp(u.balance)}</td>
+      <td><span class="badge ${u.status==='active'?'badge-success-soft':'badge-danger-soft'} rounded-pill">${u.status}</span></td>
+      <td>${u.telegram_chat_id?'<i class="bi bi-telegram text-primary"></i>':'<span class="text-muted">—</span>'}</td>
+      <td><button class="btn btn-xs btn-outline-primary" style="font-size:.75rem;padding:.15rem .5rem" onclick="showUserDetail(${u.id})">Detail</button></td>
+    </tr>`).join('')
+  }</tbody></table></div>`;
+  const pages=Math.ceil((d.total||0)/20);
+  document.getElementById('usersPager').innerHTML=pages<2?'':Array.from({length:pages},(_,i)=>`<button class="btn btn-sm ${i+1===page?'btn-primary':'btn-outline-primary'}" onclick="loadUsers(${i+1})">${i+1}</button>`).join('');
+}
+
+async function showUserDetail(id){
+  const modal=new bootstrap.Modal(document.getElementById('userModal'));
+  document.getElementById('userModalBody').innerHTML='<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>';
+  modal.show();
+  // Fetch user orders
+  const [users]=await Promise.all([api('GET',`/api/admin/users?q=${id}`)]);
+  const u=users.data?.find(x=>x.id===id)||{id};
+  document.getElementById('userModalBody').innerHTML=`
+    <div class="row g-3 mb-3">
+      <div class="col-sm-6"><div class="small text-muted">Username</div><div class="fw-700">${u.username||'—'}</div></div>
+      <div class="col-sm-6"><div class="small text-muted">Email</div><div class="fw-700">${u.email||'—'}</div></div>
+      <div class="col-sm-6"><div class="small text-muted">Saldo</div><div class="fw-700 text-success">${rp(u.balance)}</div></div>
+      <div class="col-sm-6"><div class="small text-muted">Role</div><div class="fw-700">${u.role||'—'}</div></div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn btn-sm btn-outline-${u.status==='active'?'danger':'success'}" onclick="toggleUserStatus(${u.id},'${u.status==='active'?'suspended':'active'}')">
+        ${u.status==='active'?'Suspend User':'Aktifkan User'}
+      </button>
+      <button class="btn btn-sm btn-outline-warning" onclick="toggleRole(${u.id},'${u.role==='admin'?'user':'admin'}')">
+        Jadikan ${u.role==='admin'?'User Biasa':'Admin'}
+      </button>
+    </div>`;
+}
+
+async function toggleUserStatus(id,status){
+  const d=await api('POST',`/api/admin/users/${id}/status`,{status});
+  if(d.success){bootstrap.Modal.getInstance(document.getElementById('userModal'))?.hide();loadUsers()}
+  else alert(d.error)
+}
+async function toggleRole(id,role){
+  if(!confirm(`Ubah role user #${id} menjadi ${role}?`))return;
+  const d=await api('POST',`/api/admin/users/${id}/role`,{role});
+  if(d.success){bootstrap.Modal.getInstance(document.getElementById('userModal'))?.hide();loadUsers()}
+  else alert(d.error)
+}
+
+async function loadOrders(page=1,status=''){
+  document.getElementById('ordersTable').innerHTML='<div class="text-center py-3"><div class="spinner-border text-primary spinner-border-sm"></div></div>';
+  const url=`/api/admin/orders?page=${page}&limit=25${status?'&status='+status:''}`;
+  const d=await api('GET',url);
+  const el=document.getElementById('ordersTable');
+  if(!(d.data||[]).length){el.innerHTML='<div class="text-center py-3 text-muted small">Tidak ada order.</div>';return}
+  el.innerHTML=`<div class="table-responsive"><table class="table mb-0 small"><thead><tr><th>ID</th><th>User</th><th>Layanan</th><th>Nomor</th><th>OTP</th><th>Harga</th><th>Status</th><th>Waktu</th></tr></thead><tbody>${
+    d.data.map(o=>`<tr>
+      <td class="text-muted">${o.id}</td>
+      <td class="fw-600">${o.username||'—'}</td>
+      <td>${o.service_name||o.service_id}</td>
+      <td><code>${o.phone_number||'—'}</code></td>
+      <td>${o.otp_code?`<code class="text-success fw-700">${o.otp_code}</code>`:'<span class="text-muted">—</span>'}</td>
+      <td>${rp(o.price)}</td>
+      <td>${orderBadge(o.status)}</td>
+      <td class="text-muted">${dt(o.created_at)}</td>
+    </tr>`).join('')
+  }</tbody></table></div>`;
+  const pages=Math.ceil((d.total||0)/25);
+  document.getElementById('ordersPager').innerHTML=pages<2?'':Array.from({length:pages},(_,i)=>`<button class="btn btn-sm ${i+1===page?'btn-primary':'btn-outline-primary'}" onclick="loadOrders(${i+1},'${status}')">${i+1}</button>`).join('');
+}
+
+async function loadTx(){
+  const d=await api('GET','/api/admin/transactions?limit=50');
+  const el=document.getElementById('txTable');
+  if(!(d.data||[]).length){el.innerHTML='<div class="text-center py-3 text-muted small">Belum ada transaksi.</div>';return}
+  el.innerHTML=`<div class="table-responsive"><table class="table mb-0 small"><thead><tr><th>Invoice</th><th>User</th><th>Jumlah</th><th>Status</th><th>Waktu</th></tr></thead><tbody>${
+    d.data.map(t=>`<tr>
+      <td><code>${t.pakasir_order_id}</code></td>
+      <td class="fw-600">${t.username||'—'}</td>
+      <td class="fw-700">${rp(t.amount)}</td>
+      <td>${txBadge(t.status)}</td>
+      <td class="text-muted">${dt(t.created_at)}</td>
+    </tr>`).join('')
+  }</tbody></table></div>`;
+}
+
+async function loadSettings(){
+  const d=await api('GET','/api/admin/settings');
+  if(!d.success)return;
+  const s=d.settings;
+  document.getElementById('set_markup').value=s.markup_percent||15;
+  document.getElementById('set_sitename').value=s.site_name||'';
+  document.getElementById('set_tagline').value=s.site_tagline||'';
+  document.getElementById('set_cancel_min').value=s.auto_cancel_min||20;
+  document.getElementById('maintenanceToggle').checked=s.maintenance_mode==='1';
+  loadProviderBalance();
+}
+
+async function loadProviderBalance(){
+  document.getElementById('providerBalanceBox').textContent='Memuat...';
+  const d=await api('GET','/api/admin/provider-balance').catch(()=>null);
+  document.getElementById('providerBalanceBox').innerHTML=d?.data?.balance!=null
+    ?`<div class="fw-800 fs-5 text-success">${rp(d.data.balance)}</div><div class="text-muted" style="font-size:.75rem">Saldo tersedia di RumahOTP</div>`
+    :'<span class="text-danger small">Gagal mengambil saldo.</span>';
+}
+
+document.getElementById('settingsForm').addEventListener('submit',async(e)=>{
+  e.preventDefault();
+  const d=await api('POST','/api/admin/settings',{
+    markup_percent:document.getElementById('set_markup').value,
+    site_name:document.getElementById('set_sitename').value,
+    site_tagline:document.getElementById('set_tagline').value,
+    auto_cancel_min:document.getElementById('set_cancel_min').value,
+  });
+  document.getElementById('settingsAlert').innerHTML=`<div class="alert alert-${d.success?'success':'danger'} py-2 small">${d.success?'✅ Tersimpan!':d.error}</div>`;
+});
+
+async function toggleMaintenance(on){
+  const d=await api('POST','/api/admin/settings',{maintenance_mode:on?'1':'0'});
+  document.getElementById('maintenanceAlert').innerHTML=`<div class="alert alert-${d.success?'success':'danger'} py-2 small">${d.success?`Maintenance mode ${on?'ON':'OFF'}.`:d.error}</div>`;
+}
+
+async function adjustBalance(){
+  const uid=document.getElementById('adjUserId').value;
+  const amount=document.getElementById('adjAmount').value;
+  const note=document.getElementById('adjNote').value;
+  if(!uid||!amount){alert('Isi semua field!');return}
+  const d=await api('POST',`/api/admin/users/${uid}/balance`,{amount:Number(amount),note});
+  document.getElementById('adjAlert').innerHTML=`<div class="alert alert-${d.success?'success':'danger'} py-2 small mb-0 mt-2">${d.success?'✅ Saldo berhasil disesuaikan!':d.error}</div>`;
+}
+</script>
+</body>
+</html>

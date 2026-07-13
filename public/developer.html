@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>API Documentation — RumahOTP</title>
+<link rel="icon" href="/assets/favicon.ico"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5/dist/brite/bootstrap.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+<style>
+body{background:#f8f9fa;font-family:'Segoe UI',system-ui,sans-serif}
+.doc-sidebar{width:240px;position:sticky;top:80px;height:fit-content}
+.doc-nav-link{display:block;padding:.4rem 1rem;color:#495057;text-decoration:none;font-size:.87rem;border-radius:.4rem;transition:all .2s}
+.doc-nav-link:hover,.doc-nav-link.active{background:#f0f5ff;color:#0d6efd;font-weight:600}
+.endpoint-card{border:1px solid #e9ecef;border-radius:.875rem;overflow:hidden;margin-bottom:1.25rem}
+.endpoint-header{padding:.85rem 1.25rem;background:#fff;display:flex;align-items:center;gap:.75rem;cursor:pointer;transition:background .15s}
+.endpoint-header:hover{background:#f8f9fa}
+.method-badge{font-family:monospace;font-weight:800;font-size:.8rem;padding:.25rem .6rem;border-radius:.4rem;min-width:50px;text-align:center}
+.method-get{background:#d1fae5;color:#065f46}
+.method-post{background:#dbeafe;color:#1e40af}
+.endpoint-path{font-family:monospace;font-weight:700;font-size:.92rem;color:#1e293b}
+.code-block{background:#1e293b;color:#e2e8f0;border-radius:.6rem;padding:1rem 1.2rem;font-family:monospace;font-size:.83rem;line-height:1.7;overflow-x:auto}
+.code-block .key{color:#93c5fd}.code-block .str{color:#86efac}.code-block .num{color:#fb923c}.code-block .cmt{color:#64748b}
+.auth-box{background:linear-gradient(135deg,#fef3c7,#fff7ed);border:1.5px solid #fcd34d;border-radius:.875rem;padding:1.25rem}
+.hero-doc{background:linear-gradient(135deg,#1e293b,#0f172a);padding:3rem 0;color:#fff}
+</style>
+</head>
+<body>
+<nav class="navbar navbar-light bg-white shadow-sm sticky-top">
+  <div class="container">
+    <a class="navbar-brand fw-800 text-primary" href="/" id="navBrand">RumahOTP</a>
+    <div class="d-flex gap-2">
+      <a href="/dashboard" class="btn btn-outline-primary btn-sm">Dashboard</a>
+    </div>
+  </div>
+</nav>
+
+<div class="hero-doc">
+  <div class="container">
+    <div class="badge bg-warning text-dark rounded-pill mb-3 small fw-700">REST API v1</div>
+    <h1 class="fw-900 mb-2">Developer API</h1>
+    <p class="text-secondary mb-3">Integrasikan layanan nomor virtual OTP ke sistem kamu sendiri.</p>
+    <div class="d-flex gap-2 flex-wrap">
+      <span class="badge bg-secondary rounded-pill px-3 py-2"><i class="bi bi-shield-check me-1"></i>JWT Auth</span>
+      <span class="badge bg-secondary rounded-pill px-3 py-2"><i class="bi bi-json me-1"></i>JSON</span>
+      <span class="badge bg-secondary rounded-pill px-3 py-2"><i class="bi bi-lightning me-1"></i>REST</span>
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+  <div class="row g-4">
+    <div class="col-lg-3 d-none d-lg-block">
+      <div class="doc-sidebar">
+        <div class="small fw-700 text-muted text-uppercase mb-2 ps-2" style="letter-spacing:1px">Navigasi</div>
+        <a class="doc-nav-link" href="#auth">Autentikasi</a>
+        <a class="doc-nav-link" href="#catalog">Katalog</a>
+        <a class="doc-nav-link" href="#order">Order</a>
+        <a class="doc-nav-link" href="#payment">Pembayaran</a>
+        <a class="doc-nav-link" href="#user">User</a>
+        <a class="doc-nav-link" href="#errors">Kode Error</a>
+      </div>
+    </div>
+    <div class="col-lg-9">
+
+      <!-- BASE URL -->
+      <div class="card border-0 shadow-sm rounded-3 p-4 mb-4">
+        <div class="fw-700 mb-2">Base URL</div>
+        <div class="code-block"><span class="str" id="baseUrl">https://yourdomain.com</span></div>
+        <div class="mt-2 small text-muted">Semua endpoint diawali dengan <code>/api/</code>. Response selalu JSON.</div>
+      </div>
+
+      <!-- AUTH -->
+      <div id="auth" class="mb-3"><div class="h5 fw-800 border-bottom pb-2 mb-3">🔐 Autentikasi</div></div>
+      <div class="auth-box mb-4">
+        <div class="fw-700 mb-2"><i class="bi bi-key me-1"></i>Cookie-based JWT</div>
+        <p class="text-muted small mb-2">Setelah login berhasil, server mengirimkan cookie <code>otp_session</code> (httpOnly). Kirim cookie ini di setiap request yang memerlukan autentikasi.</p>
+        <p class="text-muted small mb-0">Atau sertakan token di header: <code>Authorization: Bearer &lt;token&gt;</code></p>
+      </div>
+
+      <div class="endpoint-card">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><code class="endpoint-path">/api/auth/login</code></div>
+        <div class="p-4 border-top">
+          <p class="small text-muted">Login Step 1 — validasi kredensial dan kirim kode Telegram (jika sudah ditautkan).</p>
+          <div class="fw-600 small mb-1">Request Body</div>
+          <div class="code-block mb-3">{ <span class="key">"login"</span>: <span class="str">"username_atau_email"</span>, <span class="key">"password"</span>: <span class="str">"password123"</span> }</div>
+          <div class="fw-600 small mb-1">Response (tanpa Telegram)</div>
+          <div class="code-block">{ <span class="key">"success"</span>: <span class="num">true</span>, <span class="key">"twofa"</span>: <span class="num">false</span>, <span class="key">"user"</span>: { ... } }</div>
+          <div class="fw-600 small mb-1 mt-2">Response (dengan Telegram 2FA)</div>
+          <div class="code-block">{ <span class="key">"success"</span>: <span class="num">true</span>, <span class="key">"twofa"</span>: <span class="num">true</span>, <span class="key">"user_id"</span>: <span class="num">123</span> }</div>
+        </div>
+      </div>
+
+      <div class="endpoint-card">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><code class="endpoint-path">/api/auth/verify-login</code></div>
+        <div class="p-4 border-top">
+          <p class="small text-muted">Login Step 2 — verifikasi kode 6-digit dari Telegram.</p>
+          <div class="code-block">{ <span class="key">"user_id"</span>: <span class="num">123</span>, <span class="key">"code"</span>: <span class="str">"123456"</span> }</div>
+        </div>
+      </div>
+
+      <!-- CATALOG -->
+      <div id="catalog" class="mb-3 mt-4"><div class="h5 fw-800 border-bottom pb-2 mb-3">📋 Katalog</div></div>
+
+      <div class="endpoint-card">
+        <div class="endpoint-header"><span class="method-badge method-get">GET</span><code class="endpoint-path">/api/catalog/services</code></div>
+        <div class="p-4 border-top">
+          <p class="small text-muted">Daftar semua layanan yang tersedia (WhatsApp, Telegram, Google, dll). <strong>Perlu auth.</strong></p>
+          <div class="code-block">{ <span class="key">"success"</span>: <span class="num">true</span>, <span class="key">"data"</span>: [ { <span class="key">"service_id"</span>: <span class="str">"1"</span>, <span class="key">"service_name"</span>: <span class="str">"WhatsApp"</span> }, ... ] }</div>
+        </div>
+      </div>
+
+      <div class="endpoint-card">
+        <div class="endpoint-header"><span class="method-badge method-get">GET</span><code class="endpoint-path">/api/catalog/countries?service_id=1</code></div>
+        <div class="p-4 border-top">
+          <p class="small text-muted">Daftar negara untuk layanan tertentu, lengkap dengan harga dan stok. <strong>Perlu auth.</strong></p>
+        </div>
+      </div>
+
+      <div class="endpoint-card">
+        <div class="endpoint-header"><span class="method-badge method-get">GET</span><code class="endpoint-path">/api/catalog/operators?country=id&provider_id=1</code></div>
+        <div class="p-4 border-top">
+          <p class="small text-muted">Daftar operator untuk negara & provider tertentu. <strong>Perlu auth.</strong></p>
+        </div>
+      </div>
+
+      <!-- ORDER -->
+      <div id="order" class="mb-3 mt-4"><div class="h5 fw-800 border-bottom pb-2 mb-3">📱 Order</div></div>
+
+      <div class="endpoint-card">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><code class="endpoint-path">/api/order/create</code></div>
+        <div class="p-4 border-top">
+          <p class="small text-muted">Buat pesanan nomor virtual. Juga otomatis membuat transaksi QRIS Pakasir. <strong>Perlu auth.</strong></p>
+          <div class="fw-600 small mb-1">Request Body</div>
+          <div class="code-block">{ <br/>&nbsp;&nbsp;<span class="key">"service_id"</span>: <span class="str">"1"</span>,<br/>&nbsp;&nbsp;<span class="key">"service_name"</span>: <span class="str">"WhatsApp"</span>,<br/>&nbsp;&nbsp;<span class="key">"country"</span>: <span class="str">"id"</span>,<br/>&nbsp;&nbsp;<span class="key">"country_name"</span>: <span class="str">"Indonesia"</span>,<br/>&nbsp;&nbsp;<span class="key">"provider_id"</span>: <span class="str">"1"</span>,<br/>&nbsp;&nbsp;<span class="key">"operator_id"</span>: <span class="str">"1"</span>,<br/>&nbsp;&nbsp;<span class="key">"number_id"</span>: <span class="str">"abc123"</span>,<br/>&nbsp;&nbsp;<span class="key">"base_price"</span>: <span class="num">2000</span><br/>}</div>
+          <div class="fw-600 small mb-1 mt-2">Response</div>
+          <div class="code-block">{ <span class="key">"success"</span>: <span class="num">true</span>, <span class="key">"order_id"</span>: <span class="num">42</span>, <span class="key">"pakasir_order_id"</span>: <span class="str">"OTP..."</span>, <span class="key">"amount"</span>: <span class="num">2300</span>, <span class="key">"qr_string"</span>: <span class="str">"..."</span> }</div>
+        </div>
+      </div>
+
+      <div class="endpoint-card">
+        <div class="endpoint-header"><span class="method-badge method-get">GET</span><code class="endpoint-path">/api/order/:id/otp-status</code></div>
+        <div class="p-4 border-top">
+          <p class="small text-muted">Polling status order — cek apakah nomor sudah aktif dan OTP sudah masuk. <strong>Perlu auth.</strong></p>
+          <div class="code-block">{ <span class="key">"success"</span>: <span class="num">true</span>, <span class="key">"order"</span>: { <span class="key">"id"</span>: <span class="num">42</span>, <span class="key">"status"</span>: <span class="str">"otp_received"</span>, <span class="key">"phone_number"</span>: <span class="str">"+62..."</span>, <span class="key">"otp_code"</span>: <span class="str">"123456"</span> } }</div>
+          <div class="mt-2 small"><strong>Status order:</strong> <code>pending_payment</code> → <code>paid</code> → <code>number_issued</code> → <code>otp_received</code> / <code>cancelled</code> / <code>expired</code></div>
+        </div>
+      </div>
+
+      <div class="endpoint-card">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><code class="endpoint-path">/api/order/:id/cancel</code></div>
+        <div class="p-4 border-top"><p class="small text-muted">Cancel order. Saldo dikembalikan jika berlaku. <strong>Perlu auth.</strong></p></div>
+      </div>
+
+      <!-- PAYMENT -->
+      <div id="payment" class="mb-3 mt-4"><div class="h5 fw-800 border-bottom pb-2 mb-3">💳 Pembayaran</div></div>
+
+      <div class="endpoint-card">
+        <div class="endpoint-header"><span class="method-badge method-get">GET</span><code class="endpoint-path">/api/order/:id/payment-status</code></div>
+        <div class="p-4 border-top"><p class="small text-muted">Cek status pembayaran QRIS. Gunakan untuk polling di halaman payment. <strong>Perlu auth.</strong></p></div>
+      </div>
+
+      <div class="endpoint-card">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><code class="endpoint-path">/webhook/pakasir</code></div>
+        <div class="p-4 border-top">
+          <p class="small text-muted">Webhook yang dipanggil Pakasir setelah pembayaran berhasil. Tidak perlu auth. Verifikasi independen ke Pakasir dilakukan otomatis (anti-spoofing).</p>
+          <div class="code-block">{ <span class="key">"order_id"</span>: <span class="str">"OTP..."</span>, <span class="key">"status"</span>: <span class="str">"success"</span>, <span class="key">"amount"</span>: <span class="num">2300</span> }</div>
+        </div>
+      </div>
+
+      <!-- USER -->
+      <div id="user" class="mb-3 mt-4"><div class="h5 fw-800 border-bottom pb-2 mb-3">👤 User</div></div>
+
+      <div class="endpoint-card">
+        <div class="endpoint-header"><span class="method-badge method-get">GET</span><code class="endpoint-path">/api/auth/me</code></div>
+        <div class="p-4 border-top"><p class="small text-muted">Data user yang sedang login. <strong>Perlu auth.</strong></p></div>
+      </div>
+
+      <div class="endpoint-card">
+        <div class="endpoint-header"><span class="method-badge method-get">GET</span><code class="endpoint-path">/api/user/orders?page=1&limit=20</code></div>
+        <div class="p-4 border-top"><p class="small text-muted">Riwayat order user. <strong>Perlu auth.</strong></p></div>
+      </div>
+
+      <div class="endpoint-card">
+        <div class="endpoint-header"><span class="method-badge method-get">GET</span><code class="endpoint-path">/api/user/transactions?page=1&limit=20</code></div>
+        <div class="p-4 border-top"><p class="small text-muted">Riwayat transaksi pembayaran user. <strong>Perlu auth.</strong></p></div>
+      </div>
+
+      <!-- ERRORS -->
+      <div id="errors" class="mb-3 mt-4"><div class="h5 fw-800 border-bottom pb-2 mb-3">⚠️ Kode Error</div></div>
+      <div class="card border-0 shadow-sm rounded-3">
+        <table class="table mb-0">
+          <thead class="table-light"><tr><th>HTTP Code</th><th>Arti</th></tr></thead>
+          <tbody class="small">
+            <tr><td><code>200</code></td><td>Berhasil</td></tr>
+            <tr><td><code>400</code></td><td>Request tidak valid / parameter salah</td></tr>
+            <tr><td><code>401</code></td><td>Belum login atau token tidak valid</td></tr>
+            <tr><td><code>403</code></td><td>Akses ditolak (tidak cukup izin)</td></tr>
+            <tr><td><code>404</code></td><td>Data tidak ditemukan</td></tr>
+            <tr><td><code>409</code></td><td>Konflik (misal: username sudah dipakai)</td></tr>
+            <tr><td><code>429</code></td><td>Terlalu banyak request (rate limit)</td></tr>
+            <tr><td><code>500</code></td><td>Kesalahan server internal</td></tr>
+            <tr><td><code>502</code></td><td>Gagal terhubung ke provider eksternal (RumahOTP/Pakasir)</td></tr>
+            <tr><td><code>503</code></td><td>Website dalam mode maintenance</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+fetch('/api/site-info').then(r=>r.json()).then(d=>{
+  if(d.site_name)document.getElementById('navBrand').textContent=d.site_name;
+  document.getElementById('baseUrl').textContent=d.domain||location.origin;
+}).catch(()=>{document.getElementById('baseUrl').textContent=location.origin});
+</script>
+</body>
+</html>

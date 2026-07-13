@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Blog — ReceOTP</title>
+<link rel="icon" id="favicon" href="/assets/favicon.ico"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5/dist/brite/bootstrap.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+body{font-family:'Inter',system-ui,sans-serif;background:#f8f9fa}
+h1,h2,h3,.navbar-brand{font-family:'Poppins',system-ui,sans-serif}
+.hero-blog{background:linear-gradient(160deg,#000000 0%,#000000 100%);padding:3.5rem 0;color:#fff}
+.hero-blog h1{font-size:clamp(1.8rem,5vw,2.5rem);font-weight:800}
+.blog-card{border:none;border-radius:1rem;box-shadow:0 2px 16px rgba(0,0,0,.06);height:100%;transition:transform .2s,box-shadow .2s;overflow:hidden}
+.blog-card:hover{transform:translateY(-4px);box-shadow:0 10px 28px rgba(0,0,0,.1)}
+.blog-thumb{height:160px;object-fit:cover;width:100%}
+.blog-thumb-placeholder{height:160px;display:flex;align-items:center;justify-content:center;font-size:3rem}
+.blog-cat{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.section-label{font-size:.75rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#0d6efd;margin-bottom:.4rem}
+.faq-item{border:none;border-bottom:1px solid #e9ecef}
+.faq-item .accordion-button{font-weight:600;font-size:.95rem;background:transparent;color:#212529}
+.faq-item .accordion-button:not(.collapsed){color:#0d6efd;background:transparent;box-shadow:none}
+footer{background:#181b1f;color:rgba(255,255,255,.65);font-size:.9rem}
+footer a{color:rgba(255,255,255,.6);text-decoration:none;transition:color .2s}
+footer a:hover{color:#fff}
+</style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+  <div class="container">
+    <a class="navbar-brand fw-700 text-primary" href="/"><span id="navSiteName">ReceOTP</span></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="/">Beranda</a></li>
+        <li class="nav-item"><a class="nav-link" href="/order">Beli Nomor</a></li>
+        <li class="nav-item"><a class="nav-link" href="/about">Tentang</a></li>
+        <li class="nav-item"><a class="nav-link" href="/developer/api">API Docs</a></li>
+        <li class="nav-item"><a class="nav-link active" href="/blog">Blog</a></li>
+      </ul>
+      <div class="d-flex gap-2" id="navAuth">
+        <a href="/login" class="btn btn-outline-primary btn-sm">Login</a>
+        <a href="/register" class="btn btn-primary btn-sm">Daftar Gratis</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<section class="hero-blog">
+  <div class="container text-center">
+    <div class="section-label" style="color:rgba(255,255,255,.6)">Blog & Panduan</div>
+    <h1 class="mb-2">Tips, Panduan & Update Terbaru</h1>
+    <p style="color:rgba(255,255,255,.8)">Pelajari cara terbaik menggunakan nomor virtual OTP untuk kebutuhan kamu.</p>
+  </div>
+</section>
+
+<!-- ARTIKEL UTAMA -->
+<section class="py-5">
+  <div class="container">
+    <div class="section-label mb-1">Artikel Terbaru</div>
+    <h2 class="fw-800 mb-4">Panduan & Tips</h2>
+    <div class="row g-4">
+
+      <div class="col-md-4">
+        <div class="card blog-card">
+          <div class="blog-thumb-placeholder bg-primary bg-opacity-10">📱</div>
+          <div class="card-body p-4">
+            <span class="blog-cat text-primary">Panduan</span>
+            <h5 class="fw-700 mt-2 mb-2">Cara Verifikasi WhatsApp dengan Nomor Virtual</h5>
+            <p class="text-muted small">Panduan langkah demi langkah untuk menggunakan nomor virtual membuat akun WhatsApp baru tanpa nomor pribadi...</p>
+            <div class="d-flex align-items-center gap-2 mt-3">
+              <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-700" style="width:28px;height:28px;font-size:.7rem">A</div>
+              <span class="small text-muted">Admin · 5 menit baca</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card blog-card">
+          <div class="blog-thumb-placeholder bg-success bg-opacity-10">🔐</div>
+          <div class="card-body p-4">
+            <span class="blog-cat text-success">Keamanan</span>
+            <h5 class="fw-700 mt-2 mb-2">Apa itu OTP dan Kenapa Penting untuk Keamanan Akun?</h5>
+            <p class="text-muted small">One-Time Password (OTP) adalah lapisan keamanan tambahan yang melindungi akun kamu dari akses tidak sah. Pelajari cara kerjanya...</p>
+            <div class="d-flex align-items-center gap-2 mt-3">
+              <div class="rounded-circle bg-success d-flex align-items-center justify-content-center text-white fw-700" style="width:28px;height:28px;font-size:.7rem">A</div>
+              <span class="small text-muted">Admin · 4 menit baca</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card blog-card">
+          <div class="blog-thumb-placeholder bg-warning bg-opacity-10">💻</div>
+          <div class="card-body p-4">
+            <span class="blog-cat text-warning">Developer</span>
+            <h5 class="fw-700 mt-2 mb-2">Integrasi REST API OTP ke Aplikasi Node.js</h5>
+            <p class="text-muted small">Tutorial lengkap mengintegrasikan API nomor virtual ke aplikasi Node.js kamu dalam waktu kurang dari 30 menit...</p>
+            <div class="d-flex align-items-center gap-2 mt-3">
+              <div class="rounded-circle bg-warning d-flex align-items-center justify-content-center text-white fw-700" style="width:28px;height:28px;font-size:.7rem">A</div>
+              <span class="small text-muted">Admin · 8 menit baca</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card blog-card">
+          <div class="blog-thumb-placeholder bg-info bg-opacity-10">🌍</div>
+          <div class="card-body p-4">
+            <span class="blog-cat text-info">Tips</span>
+            <h5 class="fw-700 mt-2 mb-2">Negara Mana yang Terbaik untuk Verifikasi Google?</h5>
+            <p class="text-muted small">Tidak semua negara sama efektifnya untuk verifikasi Google. Kami rangkum rekomendasi terbaik berdasarkan tingkat keberhasilan...</p>
+            <div class="d-flex align-items-center gap-2 mt-3">
+              <div class="rounded-circle bg-info d-flex align-items-center justify-content-center text-white fw-700" style="width:28px;height:28px;font-size:.7rem">A</div>
+              <span class="small text-muted">Admin · 3 menit baca</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card blog-card">
+          <div class="blog-thumb-placeholder bg-danger bg-opacity-10">📊</div>
+          <div class="card-body p-4">
+            <span class="blog-cat text-danger">Marketing</span>
+            <h5 class="fw-700 mt-2 mb-2">Cara Efektif Mengelola Banyak Akun Sosial Media</h5>
+            <p class="text-muted small">Tips dari para digital marketer profesional tentang cara mengelola ratusan akun sosial media secara efisien dan aman...</p>
+            <div class="d-flex align-items-center gap-2 mt-3">
+              <div class="rounded-circle bg-danger d-flex align-items-center justify-content-center text-white fw-700" style="width:28px;height:28px;font-size:.7rem">A</div>
+              <span class="small text-muted">Admin · 6 menit baca</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card blog-card">
+          <div class="blog-thumb-placeholder" style="background:#f3e8ff">🤖</div>
+          <div class="card-body p-4">
+            <span class="blog-cat" style="color:#6f42c1">Automation</span>
+            <h5 class="fw-700 mt-2 mb-2">Otomasi Registrasi dengan Python + API OTP</h5>
+            <p class="text-muted small">Pelajari cara membuat script Python sederhana yang otomatis mengambil nomor OTP dan menyelesaikan registrasi platform...</p>
+            <div class="d-flex align-items-center gap-2 mt-3">
+              <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-700" style="width:28px;height:28px;font-size:.7rem;background:#6f42c1">A</div>
+              <span class="small text-muted">Admin · 10 menit baca</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="py-5 bg-light">
+  <div class="container" style="max-width:760px">
+    <div class="text-center mb-5">
+      <div class="section-label">FAQ</div>
+      <h2 class="fw-800">Pertanyaan yang Sering Ditanyakan</h2>
+    </div>
+    <div class="accordion" id="faq">
+      <div class="accordion-item faq-item">
+        <h2 class="accordion-header"><button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#f1">Apakah nomor virtual bisa dipakai berulang kali?</button></h2>
+        <div id="f1" class="accordion-collapse collapse show" data-bs-parent="#faq">
+          <div class="accordion-body text-muted">Tidak. Setiap nomor virtual yang kamu beli bersifat sekali pakai dan hanya aktif selama masa berlakunya (15–20 menit). Setelah digunakan atau masa aktif habis, nomor tidak bisa digunakan lagi.</div>
+        </div>
+      </div>
+      <div class="accordion-item faq-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#f2">Berapa lama OTP biasanya datang?</button></h2>
+        <div id="f2" class="accordion-collapse collapse" data-bs-parent="#faq">
+          <div class="accordion-body text-muted">Rata-rata OTP tiba dalam 10–30 detik setelah kamu memasukkan nomor ke platform tujuan. Namun bisa lebih lama tergantung kondisi jaringan platform yang dituju.</div>
+        </div>
+      </div>
+      <div class="accordion-item faq-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#f3">Apa yang terjadi jika OTP tidak masuk?</button></h2>
+        <div id="f3" class="accordion-collapse collapse" data-bs-parent="#faq">
+          <div class="accordion-body text-muted">Kamu bisa melakukan cancel order dari dashboard atau halaman status. Setelah cancel, saldo akan dikembalikan otomatis ke akun kamu dalam hitungan detik.</div>
+        </div>
+      </div>
+      <div class="accordion-item faq-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#f4">Apakah ada minimum pembelian?</button></h2>
+        <div id="f4" class="accordion-collapse collapse" data-bs-parent="#faq">
+          <div class="accordion-body text-muted">Tidak ada minimum pembelian. Kamu bisa membeli satu nomor saja sesuai kebutuhan, dan harga per nomor sudah sangat terjangkau mulai dari Rp 500.</div>
+        </div>
+      </div>
+      <div class="accordion-item faq-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#f5">Metode pembayaran apa yang diterima?</button></h2>
+        <div id="f5" class="accordion-collapse collapse" data-bs-parent="#faq">
+          <div class="accordion-body text-muted">Saat ini pembayaran hanya melalui QRIS — bisa dibayar dari semua aplikasi m-banking (BCA, Mandiri, BNI, BRI, dll) dan dompet digital (GoPay, OVO, Dana, ShopeePay, dll).</div>
+        </div>
+      </div>
+      <div class="accordion-item faq-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#f6">Apakah layanan ini legal?</button></h2>
+        <div id="f6" class="accordion-collapse collapse" data-bs-parent="#faq">
+          <div class="accordion-body text-muted">Nomor virtual OTP adalah layanan yang legal dan digunakan secara luas untuk keperluan testing, pengembangan aplikasi, dan proteksi privasi. Namun pengguna bertanggung jawab untuk menggunakan layanan ini sesuai dengan kebijakan platform yang dituju.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="py-4">
+  <div class="container">
+    <div class="d-flex justify-content-between flex-wrap gap-2 small">
+      <span id="footerCopy">© 2026 ReceOTP. Semua hak dilindungi.</span>
+      <div class="d-flex gap-3">
+        <a href="/privacy">Privasi</a>
+        <a href="/terms">Syarat</a>
+        <a href="/refund">Refund</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(async()=>{
+  try{
+    const r=await fetch('/api/site-info');
+    const d=await r.json();
+    if(d.site_name){
+      document.getElementById('navSiteName').textContent=d.site_name;
+      document.getElementById('footerCopy').textContent=`© ${new Date().getFullYear()} ${d.site_name}. Semua hak dilindungi.`;
+      document.title=`Blog — ${d.site_name}`;
+    }
+    if(d.favicon)document.getElementById('favicon').href=d.favicon;
+  }catch{}
+})();
+(async()=>{
+  try{
+    const r=await fetch('/api/auth/me');
+    const d=await r.json();
+    if(d.success){
+      document.getElementById('navAuth').innerHTML=`<a href="/dashboard" class="btn btn-outline-primary btn-sm">Dashboard</a>`;
+    }
+  }catch{}
+})();
+</script>
+</body>
+</html>

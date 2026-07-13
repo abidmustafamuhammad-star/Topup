@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Status Nomor — RumahOTP</title>
+<link rel="icon" href="/assets/favicon.ico"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5/dist/brite/bootstrap.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+<style>
+body{background:linear-gradient(135deg,#f0f5ff,#fdf0ff);min-height:100vh;font-family:'Segoe UI',system-ui,sans-serif}
+.status-card{background:#fff;border-radius:1.5rem;box-shadow:0 10px 50px rgba(13,110,253,.1);max-width:500px;width:100%;margin:0 auto;padding:2rem}
+.phone-display{font-family:monospace;font-size:1.8rem;font-weight:900;letter-spacing:3px;color:#0d6efd;background:#f0f5ff;border-radius:.75rem;padding:.6rem 1.2rem;text-align:center;margin:1rem 0}
+.otp-display{font-family:monospace;font-size:2.5rem;font-weight:900;letter-spacing:6px;color:#065f46;background:#d1fae5;border-radius:.75rem;padding:.75rem 1.5rem;text-align:center;margin:1rem 0;border:2px solid #a7f3d0}
+.pulse-dot{width:.7rem;height:.7rem;border-radius:50%;background:#0d6efd;display:inline-block;animation:pulseDot 1.2s ease-in-out infinite}
+@keyframes pulseDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.3)}}
+.status-icon-wrap{font-size:4rem;text-align:center;margin-bottom:.5rem}
+.timeline{border-left:2px solid #dee2e6;padding-left:1.2rem;margin:1.2rem 0}
+.tl-item{position:relative;padding-bottom:1.2rem}
+.tl-item:last-child{padding-bottom:0}
+.tl-dot{width:.75rem;height:.75rem;border-radius:50%;position:absolute;left:-1.6rem;top:.25rem}
+.tl-done{background:#198754}
+.tl-active{background:#0d6efd;animation:pulseDot 1.2s infinite}
+.tl-wait{background:#dee2e6}
+.copy-btn{cursor:pointer;transition:all .2s}
+.copy-btn:active{transform:scale(.95)}
+</style>
+</head>
+<body class="d-flex flex-column justify-content-center align-items-center py-4 px-3">
+<div style="width:100%;max-width:500px">
+  <div class="text-center mb-3">
+    <a href="/" class="fw-800 text-primary text-decoration-none fs-5" id="siteName">RumahOTP</a>
+  </div>
+  <div class="status-card">
+
+    <!-- Loading -->
+    <div id="loadState" class="text-center py-4">
+      <div class="spinner-border text-primary mb-2"></div>
+      <div class="text-muted small">Memuat status pesanan...</div>
+    </div>
+
+    <!-- Active/Waiting OTP -->
+    <div id="activeState" class="d-none">
+      <div class="text-center mb-2">
+        <span class="badge bg-primary rounded-pill px-3 py-2">
+          <span class="pulse-dot me-1"></span>Menunggu OTP
+        </span>
+      </div>
+      <div class="text-center text-muted small mb-2">Nomor virtual kamu:</div>
+      <div class="phone-display" id="phoneNumber">+62 000 0000 0000</div>
+      <div class="d-flex justify-content-center gap-2 mb-3">
+        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyPhone()">
+          <i class="bi bi-clipboard me-1"></i>Salin Nomor
+        </button>
+      </div>
+      <div class="alert alert-info py-2 small text-center">
+        Masukkan nomor di atas ke platform tujuan, lalu OTP akan muncul otomatis di sini.
+      </div>
+      <div class="text-center mb-3">
+        <div class="text-muted small mb-1">Sisa Waktu Aktif</div>
+        <div class="fw-800 fs-4 text-danger" id="activeCountdown">—</div>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-danger flex-grow-1 btn-sm" onclick="cancelOrderFromStatus()">
+          <i class="bi bi-x-circle me-1"></i>Cancel
+        </button>
+      </div>
+    </div>
+
+    <!-- OTP Received -->
+    <div id="otpState" class="d-none">
+      <div class="status-icon-wrap"><i class="bi bi-check-circle-fill text-success"></i></div>
+      <div class="text-center fw-800 fs-5 text-success mb-1">OTP Berhasil Diterima!</div>
+      <div class="text-center text-muted small mb-2">Kode OTP kamu:</div>
+      <div class="otp-display" id="otpCode">------</div>
+      <div class="text-center text-muted small mb-1" id="otpMessage"></div>
+      <div class="d-flex justify-content-center gap-2 mb-3">
+        <button class="btn btn-success copy-btn px-4" onclick="copyOtp()">
+          <i class="bi bi-clipboard-check me-1"></i>Salin OTP
+        </button>
+      </div>
+      <div class="text-center text-muted small mb-3">Nomor: <span class="fw-700 text-primary" id="otpPhone">—</span></div>
+      <div class="d-flex gap-2">
+        <a href="/order" class="btn btn-outline-primary flex-grow-1 btn-sm">
+          <i class="bi bi-plus-circle me-1"></i>Beli Lagi
+        </a>
+        <a href="/dashboard" class="btn btn-primary flex-grow-1 btn-sm">Dashboard</a>
+      </div>
+    </div>
+
+    <!-- Cancelled / Expired -->
+    <div id="failedState" class="d-none">
+      <div class="status-icon-wrap"><i class="bi bi-x-circle-fill text-danger"></i></div>
+      <div class="text-center fw-800 fs-5 text-danger mb-1">Pesanan Dibatalkan</div>
+      <div class="text-center text-muted small mb-3">OTP tidak masuk atau pesanan dibatalkan. Saldo dikembalikan otomatis.</div>
+      <a href="/order" class="btn btn-primary w-100">Beli Nomor Lagi</a>
+    </div>
+
+    <!-- Timeline Progress -->
+    <div id="timeline" class="d-none mt-3">
+      <hr/>
+      <div class="small fw-700 text-muted mb-2">Progress</div>
+      <div class="timeline">
+        <div class="tl-item"><div class="tl-dot tl-done" id="tl1"></div><div class="small fw-600">Pembayaran Diterima</div></div>
+        <div class="tl-item"><div class="tl-dot" id="tl2"></div><div class="small fw-600" id="tl2Text">Nomor Virtual Disiapkan</div></div>
+        <div class="tl-item"><div class="tl-dot tl-wait" id="tl3"></div><div class="small fw-600" id="tl3Text">OTP Diterima</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let orderId,pollInterval,countdownInterval,expireAt;
+
+fetch('/api/site-info').then(r=>r.json()).then(d=>{if(d.site_name)document.getElementById('siteName').textContent=d.site_name}).catch(()=>{});
+
+orderId=new URLSearchParams(location.search).get('order');
+if(!orderId){location.href='/dashboard'}else{pollStatus()}
+
+async function pollStatus(){
+  try{
+    const r=await fetch(`/api/order/${orderId}/otp-status`,{credentials:'include'});
+    if(r.status===401){location.href='/login';return}
+    const d=await r.json();
+    if(!d.success){showFailed();return}
+    updateUI(d.order);
+    if(['number_issued'].includes(d.order.status)){
+      if(!pollInterval)pollInterval=setInterval(pollStatus,5000);
+    }else{
+      clearInterval(pollInterval);
+    }
+  }catch{document.getElementById('loadState').innerHTML='<div class="text-danger small">Gagal memuat. <button class="btn btn-sm btn-link" onclick="pollStatus()">Coba lagi</button></div>'}
+}
+
+function updateUI(o){
+  document.getElementById('loadState').classList.add('d-none');
+  document.getElementById('timeline').classList.remove('d-none');
+
+  // Update timeline
+  const tl2=document.getElementById('tl2'),tl3=document.getElementById('tl3');
+  if(['number_issued','otp_received','completed'].includes(o.status)){tl2.className='tl-dot tl-done'}
+  if(['otp_received','completed'].includes(o.status)){tl3.className='tl-dot tl-done'}
+  if(o.status==='number_issued'){tl2.className='tl-dot tl-active'}
+
+  if(o.status==='number_issued'){
+    document.getElementById('activeState').classList.remove('d-none');
+    if(o.status==='paid'){
+    document.getElementById('activeState').classList.add('d-none');
+    document.getElementById('otpState').classList.add('d-none');
+    document.getElementById('failedState').classList.add('d-none');
+    document.getElementById('loadState').classList.remove('d-none');
+    document.getElementById('loadState').innerHTML='<div class="spinner-border text-primary mb-2"></div><div class="text-muted small">Sedang menyiapkan nomor virtual kamu...</div>';
+    if(!pollInterval) pollInterval=setInterval(pollStatus,4000);
+    return;
+  }
+    document.getElementById('otpState').classList.add('d-none');
+    document.getElementById('failedState').classList.add('d-none');
+    document.getElementById('phoneNumber').textContent=o.phone_number||'—';
+    if(!countdownInterval&&o.expires_at){
+      expireAt=new Date(o.expires_at);
+      countdownInterval=setInterval(()=>{
+        const left=expireAt-Date.now();
+        if(left<=0){clearInterval(countdownInterval);document.getElementById('activeCountdown').textContent='KEDALUWARSA';return}
+        const m=Math.floor(left/60000),s=Math.floor((left%60000)/1000);
+        document.getElementById('activeCountdown').textContent=`${m}:${String(s).padStart(2,'0')}`;
+      },1000);
+    }
+  }
+  if(o.status==='otp_received'||o.status==='completed'){
+    clearInterval(countdownInterval);clearInterval(pollInterval);
+    document.getElementById('activeState').classList.add('d-none');
+    document.getElementById('otpState').classList.remove('d-none');
+    document.getElementById('failedState').classList.add('d-none');
+    document.getElementById('otpCode').textContent=o.otp_code||'------';
+    document.getElementById('otpPhone').textContent=o.phone_number||'—';
+    if(o.otp_message)document.getElementById('otpMessage').textContent='Pesan: '+o.otp_message;
+  }
+  if(['cancelled','expired'].includes(o.status)){clearInterval(countdownInterval);clearInterval(pollInterval);showFailed()}
+}
+
+function showFailed(){
+  document.getElementById('loadState').classList.add('d-none');
+  document.getElementById('activeState').classList.add('d-none');
+  document.getElementById('otpState').classList.add('d-none');
+  document.getElementById('failedState').classList.remove('d-none');
+}
+
+async function cancelOrderFromStatus(){
+  if(!confirm('Batalkan pesanan? Saldo dikembalikan.'))return;
+  clearInterval(pollInterval);clearInterval(countdownInterval);
+  await fetch(`/api/order/${orderId}/cancel`,{method:'POST',credentials:'include'});
+  showFailed();
+}
+
+function copyPhone(){const n=document.getElementById('phoneNumber').textContent;navigator.clipboard.writeText(n).then(()=>alert('Nomor disalin!')).catch(()=>{})}
+function copyOtp(){const c=document.getElementById('otpCode').textContent;navigator.clipboard.writeText(c).then(()=>alert('OTP disalin!')).catch(()=>{})}
+</script>
+</body>
+</html>
