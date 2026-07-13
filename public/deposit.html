@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Deposit Saldo — RumahOTP</title>
+<link rel="icon" href="/assets/favicon.ico"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5/dist/brite/bootstrap.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+<style>
+body{background:linear-gradient(135deg,#f0f5ff 0%,#fdf0ff 100%);min-height:100vh;font-family:'Segoe UI',system-ui,sans-serif}
+.dep-card{background:#fff;border-radius:1.5rem;box-shadow:0 10px 50px rgba(13,110,253,.1);max-width:440px;width:100%;margin:0 auto;padding:2rem}
+.qr-wrap{background:#f8f9fa;border-radius:1rem;padding:1.5rem;text-align:center;border:2px dashed #dee2e6}
+.qr-wrap canvas,.qr-wrap img{max-width:200px!important;height:auto!important}
+.amount-quick{cursor:pointer;transition:all .2s}
+.amount-quick.selected{background:#0d6efd;color:#fff;border-color:#0d6efd}
+.status-badge{padding:.6rem 1.2rem;border-radius:50px;font-weight:700;font-size:.9rem}
+</style>
+</head>
+<body class="d-flex flex-column justify-content-center align-items-center py-4 px-3">
+<div style="width:100%;max-width:440px">
+  <div class="text-center mb-3">
+    <a href="/dashboard" class="fw-800 text-primary text-decoration-none fs-5" id="siteName">RumahOTP</a>
+  </div>
+  <div class="dep-card">
+
+    <!-- STEP 1: Input jumlah -->
+    <div id="inputState">
+      <div class="text-center mb-3">
+        <div class="fw-700 fs-5">Deposit Saldo</div>
+        <div class="text-muted small">Isi saldo akun kamu via QRIS</div>
+      </div>
+      <div id="alertBox"></div>
+      <label class="form-label small fw-600">Jumlah Deposit</label>
+      <div class="input-group mb-2">
+        <span class="input-group-text">Rp</span>
+        <input type="number" class="form-control" id="amountInput" placeholder="Contoh: 50000" min="5000" step="1000"/>
+      </div>
+      <div class="d-flex gap-2 flex-wrap mb-3" id="quickAmounts">
+        <button type="button" class="btn btn-outline-primary btn-sm amount-quick" data-v="20000">Rp20rb</button>
+        <button type="button" class="btn btn-outline-primary btn-sm amount-quick" data-v="50000">Rp50rb</button>
+        <button type="button" class="btn btn-outline-primary btn-sm amount-quick" data-v="100000">Rp100rb</button>
+        <button type="button" class="btn btn-outline-primary btn-sm amount-quick" data-v="200000">Rp200rb</button>
+      </div>
+      <button class="btn btn-primary w-100 py-2 fw-700" id="createBtn" onclick="createDeposit()">
+        <span id="createSpinner" class="spinner-border spinner-border-sm me-2 d-none"></span>
+        Buat Kode QRIS
+      </button>
+      <div class="text-center mt-3">
+        <a href="/dashboard" class="small text-muted"><i class="bi bi-arrow-left me-1"></i>Kembali ke Dashboard</a>
+      </div>
+    </div>
+
+    <!-- STEP 2: QR & Menunggu -->
+    <div id="payState" class="d-none">
+      <div class="qr-wrap mb-3" id="qrWrap"></div>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <div class="text-muted small">Jumlah Deposit</div>
+          <div class="fw-800 fs-4 text-primary" id="payAmount">—</div>
+        </div>
+        <div class="text-end">
+          <div class="text-muted small">Sisa Waktu</div>
+          <div class="fw-700 text-danger" id="countdown">5:00</div>
+        </div>
+      </div>
+      <div id="pollMsg" class="text-center text-muted small mb-2">
+        <div class="spinner-border spinner-border-sm text-primary me-1"></div>
+        Menunggu konfirmasi pembayaran...
+      </div>
+      <button class="btn btn-outline-secondary w-100 btn-sm mt-1" onclick="resetForm()">
+        <i class="bi bi-arrow-left me-1"></i>Batal / Ganti Jumlah
+      </button>
+    </div>
+
+    <!-- STEP 3: Sukses -->
+    <div id="successState" class="d-none text-center py-2">
+      <div class="text-success mb-3" style="font-size:3.5rem"><i class="bi bi-check-circle-fill"></i></div>
+      <h5 class="fw-800 text-success">Deposit Berhasil!</h5>
+      <p class="text-muted small">Saldo kamu sudah bertambah.</p>
+      <a href="/dashboard" class="btn btn-primary w-100">Ke Dashboard</a>
+    </div>
+
+    <!-- STEP 4: Expired -->
+    <div id="expiredState" class="d-none text-center py-2">
+      <div class="text-warning mb-3" style="font-size:3.5rem"><i class="bi bi-clock-fill"></i></div>
+      <h5 class="fw-800">Waktu Pembayaran Habis</h5>
+      <p class="text-muted small">Silakan buat deposit baru.</p>
+      <button class="btn btn-primary w-100" onclick="resetForm()">Buat Deposit Baru</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+let pollInterval,countdownInterval,expireAt,pakasirId;
+
+fetch('/api/site-info').then(r=>r.json()).then(d=>{if(d.site_name)document.getElementById('siteName').textContent=d.site_name}).catch(()=>{});
+
+async function api(m,u,b){
+  const r=await fetch(u,{method:m,headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined,credentials:'include'});
+  if(r.status===401){location.href='/login';throw new Error('Auth')}
+  return r.json();
+}
+
+document.querySelectorAll('.amount-quick').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.amount-quick').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.getElementById('amountInput').value=btn.dataset.v;
+  });
+});
+
+function showAlert(msg,type='danger'){document.getElementById('alertBox').innerHTML=`<div class="alert alert-${type} py-2 small">${msg}</div>`}
+
+async function createDeposit(){
+  const amount=parseInt(document.getElementById('amountInput').value);
+  document.getElementById('alertBox').innerHTML='';
+  if(!amount||amount<5000){showAlert('Jumlah deposit minimal Rp5.000.');return}
+  const btn=document.getElementById('createBtn');const sp=document.getElementById('createSpinner');
+  btn.disabled=true;sp.classList.remove('d-none');
+  try{
+    const d=await api('POST','/api/deposit/create',{amount});
+    if(!d.success){showAlert(d.error);return}
+    initPay(d);
+  }catch(e){if(e.message!=='Auth')showAlert('Gagal terhubung ke server.')}
+  finally{btn.disabled=false;sp.classList.add('d-none')}
+}
+
+function initPay(data){
+  document.getElementById('inputState').classList.add('d-none');
+  document.getElementById('payState').classList.remove('d-none');
+  document.getElementById('payAmount').textContent='Rp '+Number(data.amount||0).toLocaleString('id-ID');
+  pakasirId=data.pakasir_order_id;
+  const qrWrap=document.getElementById('qrWrap');
+  qrWrap.innerHTML='';
+  if(data.qr_string){
+    new QRCode(qrWrap,{text:data.qr_string,width:200,height:200,correctLevel:QRCode.CorrectLevel.M});
+  }else{
+    qrWrap.innerHTML='<div class="text-muted small py-3">QR Code tidak tersedia. Hubungi admin.</div>';
+  }
+  expireAt=data.expired_at?new Date(data.expired_at):new Date(Date.now()+5*60*1000);
+  startCountdown();
+  startPolling();
+}
+
+function startCountdown(){
+  const el=document.getElementById('countdown');
+  countdownInterval=setInterval(()=>{
+    const left=expireAt-Date.now();
+    if(left<=0){clearInterval(countdownInterval);clearInterval(pollInterval);showExpired();return}
+    const m=Math.floor(left/60000),s=Math.floor((left%60000)/1000);
+    el.textContent=`${m}:${String(s).padStart(2,'0')}`;
+    if(left<60000)el.style.color='#dc3545';
+  },1000);
+}
+
+function startPolling(){
+  pollInterval=setInterval(async()=>{
+    try{
+      const d=await api('GET',`/api/deposit/${pakasirId}/status`);
+      if(d.status==='success'){clearInterval(pollInterval);clearInterval(countdownInterval);showSuccess()}
+      if(d.status==='cancelled'||d.status==='failed'){clearInterval(pollInterval);showExpired()}
+    }catch{}
+  },4000);
+}
+
+function showSuccess(){document.getElementById('payState').classList.add('d-none');document.getElementById('successState').classList.remove('d-none')}
+function showExpired(){document.getElementById('payState').classList.add('d-none');document.getElementById('expiredState').classList.remove('d-none')}
+
+function resetForm(){
+  clearInterval(pollInterval);clearInterval(countdownInterval);
+  document.getElementById('payState').classList.add('d-none');
+  document.getElementById('successState').classList.add('d-none');
+  document.getElementById('expiredState').classList.add('d-none');
+  document.getElementById('inputState').classList.remove('d-none');
+  document.getElementById('amountInput').value='';
+  document.querySelectorAll('.amount-quick').forEach(b=>b.classList.remove('selected'));
+}
+</script>
+</body>
+</html>
