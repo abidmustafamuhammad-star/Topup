@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Beli Nomor — RumahOTP</title>
+<link rel="icon" href="/assets/favicon.ico"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5/dist/brite/bootstrap.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+<style>
+body{background:#f8f9fa;font-family:'Segoe UI',system-ui,sans-serif}
+.step-nav{display:flex;gap:0;background:#fff;border-radius:1rem;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:1.5rem}
+.step-item{flex:1;padding:.85rem .5rem;text-align:center;font-size:.82rem;font-weight:600;color:#adb5bd;position:relative;transition:all .2s;border-bottom:3px solid transparent}
+.step-item.active{color:#0d6efd;border-bottom-color:#0d6efd;background:#f0f5ff}
+.step-item.done{color:#198754;border-bottom-color:#198754}
+.step-item .step-n{display:block;font-size:1.1rem;font-weight:900;line-height:1.2}
+.service-card{border:2px solid #e9ecef;border-radius:.875rem;padding:1rem;cursor:pointer;transition:all .2s;background:#fff;height:100%;display:flex;align-items:center;gap:.75rem}
+.service-card:hover{border-color:#0d6efd;background:#f0f5ff;transform:translateY(-2px)}
+.service-card.selected{border-color:#0d6efd;background:#eef4ff;box-shadow:0 0 0 2px rgba(13,110,253,.25)}
+.service-card .svc-icon{width:2.5rem;height:2.5rem;border-radius:.6rem;background:#f0f5ff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.country-card{border:2px solid #e9ecef;border-radius:.875rem;padding:.75rem 1rem;cursor:pointer;transition:all .2s;background:#fff}
+.country-card:hover{border-color:#0d6efd;background:#f0f5ff}
+.country-card.selected{border-color:#0d6efd;background:#eef4ff}
+.op-card{border:2px solid #e9ecef;border-radius:.875rem;padding:1rem;cursor:pointer;transition:all .2s;background:#fff}
+.op-card:hover,.op-card.selected{border-color:#0d6efd;background:#eef4ff}
+.price-badge{background:#d1fae5;color:#065f46;border-radius:.5rem;padding:.2rem .6rem;font-size:.82rem;font-weight:700}
+.search-box{position:relative}
+.search-box input{padding-left:2.5rem}
+.search-box .bi-search{position:absolute;left:.8rem;top:50%;transform:translateY(-50%);color:#adb5bd}
+.summary-card{background:linear-gradient(135deg,#f0f5ff,#fdf0ff);border:none;border-radius:1.2rem}
+</style>
+</head>
+<body>
+<nav class="navbar navbar-light bg-white shadow-sm sticky-top">
+  <div class="container">
+    <a class="navbar-brand fw-800 text-primary" href="/" id="navBrand">RumahOTP</a>
+    <div class="d-flex gap-2" id="navRight">
+      <a href="/dashboard" class="btn btn-outline-primary btn-sm">Dashboard</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-4" style="max-width:900px">
+  <div id="alertTop"></div>
+  <div id="loginNotice" class="alert alert-warning d-none">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    <a href="/login" class="fw-700">Login</a> atau <a href="/register" class="fw-700">Daftar</a> untuk membeli nomor virtual.
+  </div>
+
+  <!-- Step Nav -->
+  <div class="step-nav">
+    <div class="step-item active" id="stepNav1"><span class="step-n">1</span>Layanan</div>
+    <div class="step-item"        id="stepNav2"><span class="step-n">2</span>Negara</div>
+    <div class="step-item"        id="stepNav3"><span class="step-n">3</span>Operator</div>
+    <div class="step-item"        id="stepNav4"><span class="step-n">4</span>Konfirmasi</div>
+  </div>
+
+  <!-- STEP 1: Pilih Layanan -->
+  <div id="step1">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-700 mb-0">Pilih Layanan / Platform</h5>
+      <small class="text-muted" id="svcCount"></small>
+    </div>
+    <div class="search-box mb-3">
+      <i class="bi bi-search"></i>
+      <input type="text" class="form-control" id="svcSearch" placeholder="Cari WhatsApp, Google, Telegram..."/>
+    </div>
+    <div id="svcGrid" class="row g-2">
+      <div class="col-12 text-center py-5"><div class="spinner-border text-primary"></div><p class="text-muted mt-2">Memuat layanan...</p></div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Pilih Negara -->
+  <div id="step2" class="d-none">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <button class="btn btn-sm btn-outline-secondary" onclick="goStep(1)"><i class="bi bi-arrow-left"></i></button>
+      <h5 class="fw-700 mb-0">Pilih Negara — <span class="text-primary" id="step2SvcName"></span></h5>
+    </div>
+    <div class="search-box mb-3">
+      <i class="bi bi-search"></i>
+      <input type="text" class="form-control" id="ctrySearch" placeholder="Cari negara..."/>
+    </div>
+    <div id="ctryGrid" class="row g-2">
+      <div class="col-12 text-center py-5"><div class="spinner-border text-primary"></div></div>
+    </div>
+  </div>
+
+  <!-- STEP 3: Pilih Operator -->
+  <div id="step3" class="d-none">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <button class="btn btn-sm btn-outline-secondary" onclick="goStep(2)"><i class="bi bi-arrow-left"></i></button>
+      <h5 class="fw-700 mb-0">Pilih Operator — <span class="text-primary" id="step3Country"></span></h5>
+    </div>
+    <div id="opGrid" class="row g-2">
+      <div class="col-12 text-center py-5"><div class="spinner-border text-primary"></div></div>
+    </div>
+  </div>
+
+  <!-- STEP 4: Konfirmasi & Bayar -->
+  <div id="step4" class="d-none">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <button class="btn btn-sm btn-outline-secondary" onclick="goStep(3)"><i class="bi bi-arrow-left"></i></button>
+      <h5 class="fw-700 mb-0">Konfirmasi Pesanan</h5>
+    </div>
+    <div class="card summary-card p-4 mb-3">
+      <div class="row g-3">
+        <div class="col-sm-6">
+          <div class="small text-muted mb-1">Layanan</div>
+          <div class="fw-700" id="confService">—</div>
+        </div>
+        <div class="col-sm-6">
+          <div class="small text-muted mb-1">Negara</div>
+          <div class="fw-700" id="confCountry">—</div>
+        </div>
+        <div class="col-sm-6">
+          <div class="small text-muted mb-1">Operator</div>
+          <div class="fw-700" id="confOperator">—</div>
+        </div>
+        <div class="col-sm-6">
+          <div class="small text-muted mb-1">Harga</div>
+          <div class="fw-800 text-primary fs-5" id="confPrice">—</div>
+        </div>
+      </div>
+      <hr/>
+      <div class="small text-muted"><i class="bi bi-info-circle me-1"></i>Masa aktif nomor ±15-20 menit. Jika OTP tidak masuk, cancel & saldo dikembalikan otomatis.</div>
+    </div>
+    <div class="d-flex align-items-center gap-3 mb-3">
+      <div class="small text-muted">Saldo kamu:</div>
+      <div class="fw-700 text-success" id="confBalance">—</div>
+    </div>
+    <div id="confAlert"></div>
+    <button class="btn btn-primary btn-lg w-100 fw-700" id="buyBtn" onclick="placeOrder()">
+      <span id="buySpinner" class="spinner-border spinner-border-sm me-2 d-none"></span>
+      <i class="bi bi-qr-code-scan me-2"></i>Bayar dengan QRIS
+    </button>
+    <div class="text-center mt-2 small text-muted">Kamu akan diarahkan ke halaman pembayaran QRIS</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let USER=null,SVCS=[],sel={service:null,country:null,operator:null};
+
+function rp(n){return'Rp '+Number(n||0).toLocaleString('id-ID')}
+function alert2(el,msg,t='danger'){document.getElementById(el).innerHTML=`<div class="alert alert-${t} py-2 small mb-3">${msg}</div>`}
+
+async function api(m,u,b){
+  const r=await fetch(u,{method:m,headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined,credentials:'include'});
+  if(r.status===401){location.href='/login';throw new Error('Auth')}
+  return r.json()
+}
+
+function goStep(n){
+  for(let i=1;i<=4;i++){
+    document.getElementById('step'+i).classList.toggle('d-none',i!==n);
+    const nav=document.getElementById('stepNav'+i);
+    nav.classList.remove('active','done');
+    if(i<n)nav.classList.add('done');
+    if(i===n)nav.classList.add('active');
+  }
+}
+
+(async()=>{
+  const si=await fetch('/api/site-info').then(r=>r.json()).catch(()=>({}));
+  if(si.site_name)document.getElementById('navBrand').textContent=si.site_name;
+
+  const meRes=await fetch('/api/auth/me',{credentials:'include'}).catch(()=>null);
+  const me=meRes&&meRes.status!==401?await meRes.json().catch(()=>null):null;
+  if(!me?.success){
+    // Tampilkan notice tapi tetap izinkan browse catalog
+    document.getElementById('loginNotice').classList.remove('d-none');
+    USER=null;
+  } else {
+    USER=me.user;
+    document.getElementById('confBalance').textContent=rp(USER.balance);
+    // Sembunyikan notice jika sudah login
+    document.getElementById('loginNotice').classList.add('d-none');
+  }
+
+  loadServices();
+})();
+
+async function loadServices(){
+  const d=await api('GET','/api/catalog/services');
+  SVCS=(d?.data||[]);
+  document.getElementById('svcCount').textContent=`${SVCS.length} layanan tersedia`;
+  renderServices(SVCS);
+  document.getElementById('svcSearch').addEventListener('input',function(){
+    const q=this.value.toLowerCase();
+    renderServices(q?SVCS.filter(s=>(s.service_name||s.name||'').toLowerCase().includes(q)):SVCS);
+  });
+}
+
+function renderServices(list){
+  const icons={whatsapp:'bi-whatsapp',telegram:'bi-telegram',google:'bi-google',facebook:'bi-facebook',instagram:'bi-instagram',tiktok:'bi-tiktok',twitter:'bi-twitter-x',microsoft:'bi-microsoft',apple:'bi-apple'};
+  const grid=document.getElementById('svcGrid');
+  if(!list.length){grid.innerHTML='<div class="col-12 text-center py-4 text-muted">Tidak ada layanan yang cocok.</div>';return}
+  grid.innerHTML=list.map(s=>{
+    const nm=(s.service_name||s.name||'').toLowerCase();
+    const ico=Object.keys(icons).find(k=>nm.includes(k));
+    return`<div class="col-6 col-md-4 col-lg-3">
+      <div class="service-card" onclick="selectService(${JSON.stringify(s).replace(/"/g,'&quot;')})">
+        <div class="svc-icon"><i class="bi ${ico?icons[ico]:'bi-phone'} text-primary"></i></div>
+        <div class="fw-600 small">${s.service_name||s.name}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function selectService(s){
+  sel.service=s;sel.country=null;sel.operator=null;
+  document.getElementById('step2SvcName').textContent=s.service_name||s.name;
+  goStep(2);
+  document.getElementById('ctryGrid').innerHTML='<div class="col-12 text-center py-4"><div class="spinner-border text-primary"></div></div>';
+  const d=await api('GET',`/api/catalog/countries?service_id=${s.service_id||s.id}`);
+  const raw=d?.data||[];
+
+  // Flatten: 1 negara bisa punya banyak provider di dalam "pricelist"
+  const list=[];
+  raw.forEach(c=>{
+    const providers=c.pricelist||[];
+    if(!providers.length) return; // skip negara tanpa provider/stok
+    providers.forEach(p=>{
+      list.push({
+        name: c.name,
+        img: c.img,
+        country: (c.name||'').toLowerCase(),
+        number_id: c.number_id,
+        provider_id: p.provider_id,
+        server_id: p.server_id,
+        price: p.price,
+        stock: p.stock,
+        available: p.available,
+      });
+    });
+  });
+
+  const ctrySearch=document.getElementById('ctrySearch');
+  ctrySearch.value='';
+  const render=(items)=>{
+    document.getElementById('ctryGrid').innerHTML=items.map(c=>`
+      <div class="col-6 col-md-4">
+        <div class="country-card" onclick="selectCountry(${JSON.stringify(c).replace(/"/g,'&quot;')})">
+          <div class="d-flex align-items-center gap-2">
+            <span class="fw-700 small">${c.name}${c.server_id?' · Srv'+c.server_id:''}</span>
+            <span class="ms-auto price-badge">${rp(c.price||0)}</span>
+          </div>
+          <div class="text-muted" style="font-size:.75rem">Stok: ${c.stock??'?'}</div>
+        </div>
+      </div>`).join('')||'<div class="col-12 text-muted text-center py-3">Tidak ada negara tersedia.</div>';
+  };
+  render(list);
+  ctrySearch.addEventListener('input',function(){
+    const q=this.value.toLowerCase();
+    render(q?list.filter(c=>(c.name||'').toLowerCase().includes(q)):list);
+  });
+}
+
+async function selectCountry(c){
+  sel.country=c;sel.operator=null;
+  document.getElementById('step3Country').textContent=c.name;
+  goStep(3);
+  document.getElementById('opGrid').innerHTML='<div class="col-12 text-center py-4"><div class="spinner-border text-primary"></div></div>';
+  const d=await api('GET',`/api/catalog/operators?country=${encodeURIComponent(c.country)}&provider_id=${c.provider_id}`);
+  const ops=d?.data||[];
+  document.getElementById('opGrid').innerHTML=ops.map(op=>`
+    <div class="col-6 col-md-4">
+      <div class="op-card" onclick="selectOperator(${JSON.stringify(op).replace(/"/g,'&quot;')})">
+        <div class="fw-700 small mb-1">${op.operator_name||op.name||op.operator_id}</div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="price-badge">${rp(op.price||0)}</span>
+          <span class="text-muted" style="font-size:.75rem">Stok: ${op.stock||'?'}</span>
+        </div>
+      </div>
+    </div>`).join('')||'<div class="col-12 text-muted text-center py-3">Tidak ada operator.</div>';
+}
+
+function selectOperator(op){
+  // Guard: harus login sebelum masuk step konfirmasi
+  if(!USER){
+    if(confirm('Kamu harus login untuk membeli nomor. Pergi ke halaman login?')){
+      location.href='/login';
+    }
+    return;
+  }
+  sel.operator=op;
+  document.getElementById('confService').textContent=sel.service?.service_name||sel.service?.name||'—';
+  document.getElementById('confCountry').textContent=sel.country?.country_name||sel.country?.name||'—';
+  document.getElementById('confOperator').textContent=op.operator_name||op.name||op.operator_id||'—';
+  document.getElementById('confPrice').textContent=rp(op.price||sel.country?.price||0);
+  if(USER)document.getElementById('confBalance').textContent=rp(USER.balance||0);
+  goStep(4);
+}
+
+async function placeOrder(){
+  if(!USER){location.href='/login';return}
+  const op=sel.operator;const c=sel.country;const s=sel.service;
+  const btn=document.getElementById('buyBtn');const sp=document.getElementById('buySpinner');
+  btn.disabled=true;sp.classList.remove('d-none');
+  document.getElementById('confAlert').innerHTML='';
+  try{
+    const d=await api('POST','/api/order/create',{
+      service_id:s.service_id||s.id,service_name:s.service_name||s.name,
+      country:c.country,country_name:c.country_name||c.name,
+      provider_id:c.provider_id,operator_id:op.operator_id,
+      number_id:c.number_id||op.number_id,base_price:op.price||c.price||0
+    });
+    if(!d.success){alert2('confAlert',d.error);return}
+    sessionStorage.setItem('pendingOrder',JSON.stringify(d));
+    location.href=`/payment?order=${d.order_id}`;
+  }catch(e){if(e.message!=='Auth')alert2('confAlert','Gagal membuat pesanan. Coba lagi.')}
+  finally{btn.disabled=false;sp.classList.add('d-none')}
+}
+</script>
+</body>
+</html>
